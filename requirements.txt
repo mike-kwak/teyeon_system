@@ -1,0 +1,18 @@
+# ── Core Framework ────────────────────────────────────────────────────
+streamlit
+
+# ── Database & Auth ───────────────────────────────────────────────────
+supabase          # Python Supabase SDK
+python-dotenv     # .env 파일 로드
+
+# ── Data Processing ───────────────────────────────────────────────────
+pandas
+openpyxl          # KATO 엑셀 파싱 (.xlsx)
+xlrd              # 구버전 .xls 지원
+
+# ── HTTP / API ────────────────────────────────────────────────────────
+requests
+
+# ── Utilities ─────────────────────────────────────────────────────────
+python-dateutil
+pyperclip         # 클립보드 복사 (카카오톡 공유용)
