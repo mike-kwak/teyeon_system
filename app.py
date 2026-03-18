@@ -119,7 +119,7 @@ def _handle_oauth_callback():
     with st.spinner("카카오 로그인 처리 중..."):
         token_data = exchange_code_for_token(code)
         if not token_data.get("access_token"):
-            st.error("카카오 로그인에 실패했습니다. 다시 시도해주세요.")
+            st.error(f"카카오 로그인에 실패했습니다. 상세: {token_data.get('error', '알 수 없거나 응답 없음')}")
             st.query_params.clear()
             return
 
@@ -132,18 +132,25 @@ def _handle_oauth_callback():
             return
 
         # Supabase upsert
-        member = upsert_member(
-            kakao_id      = user_info["kakao_id"],
-            nickname      = user_info["nickname"],
-            profile_image = user_info.get("profile_image"),
-            email         = user_info.get("email"),
-        )
+        try:
+            member = upsert_member(
+                kakao_id      = user_info["kakao_id"],
+                nickname      = user_info["nickname"],
+                profile_image = user_info.get("profile_image"),
+                email         = user_info.get("email"),
+            )
+        except EnvironmentError:
+            st.warning("⚠️ Supabase DB가 설정되지 않아 임시 세션으로 로그인합니다.")
+            member = None
+        except Exception as e:
+            st.warning(f"⚠️ Supabase DB 권한/연동 에러로 인해 임시 세션으로 로그인합니다. (RLS 설정 등을 확인해주세요)")
+            member = None
 
         # 세션에 저장
         st.session_state["user"]         = member or user_info
         st.session_state["access_token"] = access_token
         st.session_state["kakao_id"]     = user_info["kakao_id"]
-        st.session_state["is_admin"]     = member.get("is_admin", False)
+        st.session_state["is_admin"]     = member.get("is_admin", False) if member else False
 
         # URL 정리 (code 파라미터 제거)
         st.query_params.clear()

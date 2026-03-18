@@ -16,8 +16,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-KAKAO_CLIENT_ID   = os.environ.get("KAKAO_CLIENT_ID", "")
-KAKAO_REDIRECT_URI = os.environ.get("KAKAO_REDIRECT_URI", "http://localhost:8501")
+KAKAO_CLIENT_ID     = os.environ.get("KAKAO_CLIENT_ID", "")
+KAKAO_CLIENT_SECRET = os.environ.get("KAKAO_CLIENT_SECRET", "")
+KAKAO_REDIRECT_URI  = os.environ.get("KAKAO_REDIRECT_URI", "http://localhost:8501")
 
 # ── 카카오 API 엔드포인트 ─────────────────────────────────────────────────
 _KAKAO_AUTH_BASE  = "https://kauth.kakao.com/oauth/authorize"
@@ -47,13 +48,17 @@ def exchange_code_for_token(code: str) -> dict:
         "redirect_uri": KAKAO_REDIRECT_URI,
         "code":         code,
     }
+    if KAKAO_CLIENT_SECRET:
+        payload["client_secret"] = KAKAO_CLIENT_SECRET
+        
     try:
         res = requests.post(_KAKAO_TOKEN_URL, data=payload, timeout=10)
         res.raise_for_status()
         return res.json()
     except requests.RequestException as e:
-        print(f"[auth] 토큰 교환 실패: {e}")
-        return {}
+        err_msg = e.response.text if e.response is not None else str(e)
+        print(f"[auth] 토큰 교환 실패: {err_msg}")
+        return {"error": err_msg}
 
 
 def get_kakao_user_info(access_token: str) -> dict:
