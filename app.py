@@ -216,12 +216,14 @@ def _render_sidebar():
         st.page_link("pages/03_경기결과.py",  label="📝 경기 결과")
         st.page_link("pages/05_랭킹.py",      label="🏆 랭킹")
         st.page_link("pages/06_시드예측.py",   label="🔮 시드 예측")
+        st.page_link("pages/07_멤버정보.py",   label="👥 멤버 정보")
 
         # 운영진 전용 메뉴
         if is_admin:
             st.markdown("#### 🔐 운영진 메뉴")
             st.page_link("pages/02_대진생성.py", label="⚙️ 대진 생성")
             st.page_link("pages/04_재무.py",     label="💰 재무 관리")
+            st.page_link("pages/08_멤버관리.py", label="📝 멤버 관리")
 
         st.markdown("---")
         if st.button("로그아웃", use_container_width=True):

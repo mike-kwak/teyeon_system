@@ -29,19 +29,44 @@ def get_client() -> Client:
 
 # ── 회원(members) 헬퍼 ───────────────────────────────────────────────────
 def upsert_member(kakao_id: int, nickname: str, profile_image: str = None, email: str = None) -> dict:
-    """카카오 로그인 성공 시 회원 정보를 upsert(있으면 update, 없으면 insert)."""
+    """
+    카카오 로그인 성공 시 회원 정보를 upsert.
+    """
     client = get_client()
-    data = {
-        "kakao_id": kakao_id,
-        "nickname": nickname,
-        "profile_image": profile_image,
-        "email": email,
-    }
-    res = (
-        client.table("members")
-        .upsert(data, on_conflict="kakao_id")
-        .execute()
-    )
+
+    # 1. 이미 해당 kakao_id로 등록된 멤버가 있는지 확인
+    existing = client.table("members").select("*").eq("kakao_id", kakao_id).execute()
+    
+    if existing.data:
+        data = {
+            "nickname": nickname,
+            "profile_image": profile_image,
+            "email": email,
+            "updated_at": "now()"
+        }
+        res = client.table("members").update(data).eq("kakao_id", kakao_id).execute()
+        return res.data[0] if res.data else {}
+    
+    # 2. 임시 멤버 연결 (중략...)
+    temp_member = client.table("members").select("*").eq("nickname", nickname).lt("kakao_id", 0).execute()
+    if temp_member.data:
+        member_id = temp_member.data[0]["id"]
+        data = {"kakao_id": kakao_id, "profile_image": profile_image, "email": email, "updated_at": "now()"}
+        res = client.table("members").update(data).eq("id", member_id).execute()
+        return res.data[0] if res.data else {}
+
+    # 3. 신규 생성
+    data = {"kakao_id": kakao_id, "nickname": nickname, "profile_image": profile_image, "email": email}
+    res = client.table("members").insert(data).execute()
+    return res.data[0] if res.data else {}
+
+def update_member_info(member_id: str, data: dict) -> dict:
+    """
+    회원의 상세 정보를 업데이트 (ID 기반).
+    """
+    client = get_client()
+    data["updated_at"] = "now()"
+    res = client.table("members").update(data).eq("id", member_id).execute()
     return res.data[0] if res.data else {}
 
 

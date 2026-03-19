@@ -19,13 +19,17 @@ ON CONFLICT DO NOTHING;
 -- 2. members (회원)
 CREATE TABLE IF NOT EXISTS members (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    kakao_id      BIGINT UNIQUE NOT NULL,
+    kakao_id      BIGINT UNIQUE,
     nickname      TEXT NOT NULL,
     profile_image TEXT,
     email         TEXT,
     club_id       UUID REFERENCES clubs(id) ON DELETE SET NULL,
     is_admin      BOOLEAN DEFAULT FALSE,
     is_guest      BOOLEAN DEFAULT FALSE,
+    position      TEXT,
+    mbti          TEXT,
+    affiliation   TEXT,
+    achievements  TEXT,
     joined_at     TIMESTAMPTZ DEFAULT now(),
     updated_at    TIMESTAMPTZ DEFAULT now()
 );
