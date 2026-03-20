@@ -1,28 +1,74 @@
 import streamlit as st
 from datetime import datetime, timedelta
-from core_logic.kdk_engine import get_rankings_v2
+from core_logic.kdk_engine import get_rankings_v3, calculate_rewards_v2
 import pandas as pd
+
+from db.supabase_client import check_auth_and_log
 
 st.set_page_config(page_title="경기 진행 | TEYEON", page_icon="🎾", layout="wide")
 
-# ── 100% 이미지 싱크 CSS ──────────────────────────────────────────────────
+# ── 권한 체크 및 로그 기록 ────────────────────────────────────────────────────────
+check_auth_and_log("03_경기진행.py")
+
+# ── 세션 상태 초기화 ───────────────────────────────────────────────────────────
+if "active_view" not in st.session_state:
+    st.session_state.active_view = "대진표"
+if "editing_match_idx" not in st.session_state:
+    st.session_state.editing_match_idx = None
+
+# ── CSS 스타일 ──────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-.kdk-table {
-    width: 100%; border-collapse: collapse; background-color: white; color: black; font-family: 'Malgun Gothic', 'Dotum', sans-serif;
+/* ── UI/UX Pro Max 디자인 ── */
+.match-card {
+    background: #ffffff;
+    color: #1a1a2e;
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    border-left: 8px solid #CCFF00;
+    transition: transform 0.2s ease;
 }
-.kdk-table th {
-    background-color: #fff9db; border: 1px solid #444; padding: 10px; font-weight: bold; text-align: center; font-size: 1.1rem;
+.match-card:active { transform: scale(0.98); }
+
+.match-card-header {
+    display: flex; justify-content: space-between;
+    font-size: 0.75rem; color: #777; font-weight: 600; margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 0.5px;
 }
-.kdk-table td {
-    border: 1px solid #444; padding: 8px; text-align: center; vertical-align: middle; font-size: 1rem; font-weight: 500;
+.match-card-body {
+    display: flex; align-items: center; justify-content: space-between;
 }
-.kdk-table .vs-cell { color: #999; font-weight: normal; font-size: 0.9rem; }
-.kdk-table .seq-cell { background-color: white; }
-.kdk-table .time-cell { font-weight: bold; font-size: 1.1rem; }
-.kdk-table .court-cell { color: #555; font-size: 0.9rem; font-family: monospace; }
-/* 모바일 스크롤 */
-.table-wrapper { overflow-x: auto; margin-bottom: 20px; border-radius: 5px; }
+.match-teams { font-weight: 800; font-size: 1.1rem; flex: 1; }
+.match-score-area { display: flex; align-items: center; gap: 15px; }
+.match-score { font-size: 1.6rem; font-weight: 900; color: #0A0E1A; }
+.match-time { color: #ff4b4b; font-weight: 700; font-size: 0.9rem; min-width: 45px; text-align: right; }
+
+/* Stepper UI - Horizontal Layout */
+.stepper-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.score-display { 
+    font-size: 3.5rem; font-weight: 900; line-height: 1; margin: 0; 
+    color: #CCFF00;
+    text-shadow: 0 0 15px rgba(204, 255, 0, 0.3);
+    min-width: 80px;
+    text-align: center;
+}
+.team-name-badge { 
+    background: rgba(204, 255, 0, 0.1); padding: 10px 20px; border-radius: 12px;
+    font-size: 1.1rem; color: #fff; text-align: center; font-weight: 800;
+    margin-bottom: 15px;
+    border: 1px solid rgba(204, 255, 0, 0.2);
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -42,90 +88,71 @@ def get_time_slot(rd):
     s = st_dt + timedelta(minutes=(rd-1)*duration)
     return s.strftime('%H:%M')
 
-st.markdown("## 📊 KDK 정밀 대진표 (이미지 방식)")
+# ── 상단 네비게이션 ────────────────────────────────────────────────────────────
+nav_cols = st.columns([1, 1, 1])
+if nav_cols[0].button("🎾 정밀 대진표", use_container_width=True, type="primary" if st.session_state.active_view == "대진표" else "secondary"):
+    st.session_state.active_view = "대진표"
+    st.rerun()
+if nav_cols[1].button("🏆 실시간 순위", use_container_width=True, type="primary" if st.session_state.active_view == "순위" else "secondary"):
+    st.session_state.active_view = "순위"
+    st.rerun()
+if st.session_state.editing_match_idx is not None:
+    if nav_cols[2].button("✏️ 점수 입력", use_container_width=True, type="primary" if st.session_state.active_view == "입력" else "secondary"):
+        st.session_state.active_view = "입력"
+        st.rerun()
 
-tab_board, tab_rank = st.tabs(["🎾 정밀 대진표", "🏆 실시간 순위"])
+st.divider()
 
-with tab_board:
+# ── VIEW: 대진표 (Card UI) ──────────────────────────────────────────────────
+if st.session_state.active_view == "대진표":
     for g in groups:
-        rules_text = d.get("match_rules", "(모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승)")
-        st.markdown(f"#### 📍 {g}조 대진표 <small style='color:#666; font-weight:normal;'>{rules_text}</small>", unsafe_allow_html=True)
+        # 헤더: 중앙 정렬 & 가로 한 줄 최적화
+        st.markdown(f"""
+        <div style="text-align: center; margin-bottom: 25px; line-height: 1.2;">
+            <div style="font-size: 1.5rem; font-weight: 900; color: white;">🎾 {g}조 경기 현황</div>
+            <div style="font-size: 0.7rem; color: #aab8d4; font-weight: 500; letter-spacing: -0.2px;">
+                (모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승...)
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         g_ms = [m for m in matches if m["group"] == g]
         g_ms.sort(key=lambda x: (x["round"], x["court"]))
         
-        # ── HTML 테이블 생성 시작 ────────────────
-        html = f"""
-        <div class="table-wrapper">
-        <table class="kdk-table">
-            <thead>
-                <tr>
-                    <th colspan="2">순서</th>
-                    <th colspan="2">이름</th>
-                    <th>VS</th>
-                    <th colspan="2">이름</th>
-                    <th>시간</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-        
-        # 라운드별로 루프를 돌며 rowspan 처리
-        rounds_list = sorted(list(set(m["round"] for m in g_ms)))
-        global_seq = 1
-        
-        for r in rounds_list:
-            r_ms = [m for m in g_ms if m["round"] == r]
-            r_span = len(r_ms)
-            t_slot = get_time_slot(r)
+        for m in g_ms:
+            idx = matches.index(m)
+            p_round = f"/ {m['pair_round']}" if m.get('pair_round') else ""
+            # 가독성을 위해 흰색 카드에서는 진한 네이비 사용, 점수 사이 여백(띄어쓰기) 강조
+            res_display = f"{m['score1']} &nbsp; : &nbsp; {m['score2']}" if m["status"] == "complete" else "VS"
+            score_color = "#0A0E1A" if m["status"] == "complete" else "#adb5bd"
             
-            for i, m in enumerate(r_ms):
-                html += "<tr>"
-                # 순서/코트
-                html += f"<td class='seq-cell' width='5%'>{global_seq}</td>"
-                html += f"<td class='court-cell' width='8%'>{m['court']}코트</td>"
-                
-                # 팀 1 (선수 분리 + 고정 회차 표시)
-                p1_name = m['team1'][0]
-                p2_name = m['team1'][1]
-                if m.get('pair_round'):
-                    p1_name += f"({m['pair_round']})"
-                    p2_name += f"({m['pair_round']})"
-                html += f"<td width='15%'>{p1_name}</td>"
-                html += f"<td width='15%'>{p2_name}</td>"
-                
-                # VS (첫 매치에서만 혹은 매번 표시)
-                html += f"<td class='vs-cell' width='8%'>VS</td>"
-                
-                # 팀 2 (선수 분리)
-                html += f"<td width='15%'>{m['team2'][0]}</td>"
-                html += f"<td width='15%'>{m['team2'][1]}</td>"
-                
-                # 시간 (Rowspan 적용)
-                if i == 0:
-                    html += f"<td rowspan='{r_span}' class='time-cell' width='12%'>{t_slot}</td>"
-                
-                html += "</tr>"
-                global_seq += 1
-        
-        html += "</tbody></table></div>"
-        st.markdown(html, unsafe_allow_html=True)
-
-        # ── 결과 입력창 (사용성 위해 하단 배치) ──────────────
-        st.markdown(f"#### 📝 {g}조 결과 입력")
-        with st.expander(f"{g}조 스코어 기록 열기"):
-            for m in g_ms:
-                real_idx = matches.index(m)
-                c1, c2, c3, c4 = st.columns([1.5, 1, 1, 1])
-                with c1: st.write(f"**{m['round']}R {m['court']}코트**")
-                with c2: s1 = st.number_input(f"{'&'.join(m['team1'])}", 0, 10, m['score1'], key=f"s1_{g}_{real_idx}")
-                with c3: s2 = st.number_input(f"{'&'.join(m['team2'])}", 0, 10, m['score2'], key=f"s2_{g}_{real_idx}")
-                with c4:
-                    if st.button("저장", key=f"sv_{g}_{real_idx}"):
-                        m["score1"], m["score2"] = s1, s2
-                        m["status"] = "complete"
-                        st.rerun()
-        st.write("---")
+            # 한줄로 길게 가로 레이아웃 (3칼럼: 팀1 | 점수 | 팀2)
+            st.markdown(f"""
+            <div class="match-card">
+                <div class="match-card-header" style="font-size: 0.7rem; margin-bottom: 8px; color: #888;">
+                    <div>코트 {m['court']} | {m['round']} {p_round}</div>
+                </div>
+                <div class="match-card-body" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <div style="flex: 1.4; font-weight: 800; font-size: 1.05rem; line-height: 1.1; text-align: left; overflow-wrap: break-word; color: #1a1a2e; padding-right: 5px;">
+                        {' & '.join(m['team1'])}
+                    </div>
+                    <div style="flex: 0.6; text-align: center; font-weight: 900; font-size: 1.5rem; color: {score_color}; letter-spacing: -1.5px; min-width: 75px; white-space: nowrap;">
+                        {res_display}
+                    </div>
+                    <div style="flex: 1.4; font-weight: 800; font-size: 1.05rem; line-height: 1.1; text-align: right; overflow-wrap: break-word; color: #1a1a2e; padding-left: 5px;">
+                        {' & '.join(m['team2'])}
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # 투명 버튼을 카드 뒤에 배치하여 클릭 가능하게 함
+            if st.button(f"점수 입력 / 수정 (코트 {m['court']} - {idx})", key=f"edit_card_{idx}", use_container_width=True):
+                st.session_state.editing_match_idx = idx
+                st.session_state.active_view = "입력"
+                st.rerun()
+            st.write("") # 간격
+        st.divider()
 
     # ── 카톡 공유 ──────────────────
     st.markdown("### 💬 카톡 공유용 텍스트")
@@ -138,66 +165,83 @@ with tab_board:
     st.info("결과 화면을 캡처하거나 아래 텍스트를 복사하세요.")
     st.code(share_text)
 
-with tab_rank:
-    r_dict = get_rankings_v2(matches, players)
-    import math
+# ── VIEW: 점수 입력 (Horizontal Stepper) ───────────────────────────────────────────────
+elif st.session_state.active_view == "입력" and st.session_state.editing_match_idx is not None:
+    idx = st.session_state.editing_match_idx
+    m = matches[idx]
+    
+    st.markdown(f"<h2 style='text-align:center;'>✏️ 경기 결과 입력</h2>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; color:#adb5bd; margin-bottom:20px;'>{m['round']} {m['court']}코트</div>", unsafe_allow_html=True)
+    
+    if "s1_val" not in st.session_state or st.session_state.get("last_idx") != idx:
+        st.session_state.s1_val = m["score1"] if m["status"] == "complete" else 0
+        st.session_state.s2_val = m["score2"] if m["status"] == "complete" else 0
+        st.session_state.last_idx = idx
+
+    def change_score(side, delta):
+        if side == 1: 
+            st.session_state.s1_val = max(0, min(10, st.session_state.s1_val + delta))
+        else:
+            st.session_state.s2_val = max(0, min(10, st.session_state.s2_val + delta))
+
+    # 팀 1 가로 한 줄 Stepper: [-] Score [+]
+    st.markdown(f'<div class="team-name-badge">{" & ".join(m["team1"])}</div>', unsafe_allow_html=True)
+    c1, s1, c3 = st.columns([1, 1.5, 1])
+    with c1: st.button("➖", key="s1_m", on_click=change_score, args=(1, -1), use_container_width=True)
+    with s1: st.markdown(f'<div class="score-display">{st.session_state.s1_val}</div>', unsafe_allow_html=True)
+    with c3: st.button("➕", key="s1_p", on_click=change_score, args=(1, 1), use_container_width=True)
+
+    st.markdown('<div style="text-align:center; margin: 30px 0; color:#555; font-weight:900; font-size:1.5rem; letter-spacing:5px;">V S</div>', unsafe_allow_html=True)
+
+    # 팀 2 가로 한 줄 Stepper: [-] Score [+]
+    st.markdown(f'<div class="team-name-badge">{" & ".join(m["team2"])}</div>', unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c1: st.button("➖ ", key="s2_minus", on_click=change_score, args=(2, -1), use_container_width=True)
+    with c2: st.markdown(f'<div class="score-display">{st.session_state.s2_val}</div>', unsafe_allow_html=True)
+    with c3: st.button("➕ ", key="s2_plus", on_click=change_score, args=(2, 1), use_container_width=True)
+
+    st.write("")
+    if st.button("✅ 결과 저장 및 복귀", type="primary", use_container_width=True):
+        m["score1"] = st.session_state.s1_val
+        m["score2"] = st.session_state.s2_val
+        m["status"] = "complete"
+        st.session_state.editing_match_idx = None
+        st.session_state.active_view = "대진표"
+        st.success("점수가 성공적으로 저장되었습니다!")
+        st.rerun()
+    
+    if st.button("❌ 취소", use_container_width=True):
+        st.session_state.editing_match_idx = None
+        st.session_state.active_view = "대진표"
+        st.rerun()
+
+# ── VIEW: 순위 ──────────────────────────────────────────────────────────────
+elif st.session_state.active_view == "순위":
+    overall_rank, group_rank_dict = get_rankings_v3(matches, players)
+    fines, rewards = calculate_rewards_v2(overall_rank)
+    
+    st.markdown("### 🌍 전체 통합 순위 및 정산")
+    combined_df_data = []
+    for r in overall_rank:
+        name = r["이름"]
+        amt = rewards.get(name, 0) - fines.get(name, 0)
+        note = ""
+        if name in rewards: note = f"👑 1등 상금 (+{rewards[name]:,})"
+        elif name in fines: note = f"❗ 벌금 대상 (-{fines[name]:,})"
+        combined_df_data.append({
+            "순위": r["순위"], "이름": name, "승": r["승"], "패": r["패"], 
+            "득실차": r["득실차"], "경기수": r["경기수"], "정산액": f"{amt:,}원", "비고": note
+        })
+    st.dataframe(pd.DataFrame(combined_df_data), use_container_width=True, hide_index=True)
 
     for g in groups:
-        st.markdown(f"### 🏆 {g}조 실시간 순위 및 정산")
-        if g in r_dict:
-            results_g = r_dict[g]
-            N = len(results_g)
-            p_count = math.ceil(N / 2)
-            five_k_count = p_count // 2
-            three_k_count = p_count - five_k_count
+        st.markdown(f"### 📍 {g}조 실시간 순위")
+        if g in group_rank_dict:
+            results_g = group_rank_dict[g]
+            st.dataframe(pd.DataFrame(results_g)[["순위", "이름", "승", "패", "득실차", "경기수"]], use_container_width=True, hide_index=True)
             
-            # 벌금 및 상금 계산 로직 적용
-            for i, p in enumerate(results_g):
-                rank = i + 1
-                p["상벌금"] = 0
-                p["비고"] = ""
-                
-                # 상금 (1등)
-                if rank == 1:
-                    if not p.get("is_guest"):
-                        p["상벌금"] = 10000
-                        p["비고"] = "👑 1등 상금"
-                    else:
-                        p["비고"] = "🎗️ 1등 (게스트 제외)"
-                
-                # 벌금 (하위 50%)
-                penalty_idx_start = N - p_count
-                if i >= penalty_idx_start:
-                    # 하위 50% 중에서도 더 못하면 5000원
-                    # 예: 11명 -> 6명 벌금. 6,7,8등(3k), 9,10,11등(5k)
-                    if i >= N - five_k_count:
-                        p["상벌금"] = -5000
-                        p["비고"] = "❗ 벌금 대상 (5,000)"
-                    else:
-                        p["상벌금"] = -3000
-                        p["비고"] = "❗ 벌금 대상 (3,000)"
-
-            df = pd.DataFrame(results_g)
-            
-            # 가독성을 위한 컬럼 정리 (생년월일 등 숨김)
-            display_df = df[["순위", "이름", "승", "패", "득실차", "경기수", "비고"]].copy()
-            
-            # 스타일링: 벌금 대상자 빨간색 강조
-            def highlight_penalty(row):
-                if "벌금" in str(row["비고"]):
-                    return ['background-color: #ffe3e3'] * len(row)
-                if "상금" in str(row["비고"]):
-                    return ['background-color: #e3f2fd'] * len(row)
-                return [''] * len(row)
-
-            st.dataframe(display_df.style.apply(highlight_penalty, axis=1), hide_index=True, use_container_width=True)
-            
-            # 총 벌금 합계
-            total_penalty = abs(sum(p["상벌금"] for p in results_g if p["상벌금"] < 0))
-            st.markdown(f"""
-            <div style="background: rgba(255, 75, 75, 0.1); padding: 15px; border-radius: 10px; border: 1px solid #ff4b4b; text-align: center; margin-top: 10px;">
-                <span style="font-size: 1.2rem; font-weight: bold; color: #ff4b4b;">오늘의 {g}조 총 예상 벌금 합계:</span>
-                <span style="font-size: 1.8rem; font-weight: 900; color: #ff4b4b; margin-left: 10px;">{total_penalty:,}원</span>
-            </div>
-            """, unsafe_allow_html=True)
-            st.write("")
+    total_penalty = sum(fines.values())
+    st.markdown(f"""<div style="background: rgba(255, 75, 75, 0.1); padding: 15px; border-radius: 10px; border: 1px solid #ff4b4b; text-align: center; margin-top: 10px;">
+        <span style="font-size: 1.2rem; font-weight: bold; color: #ff4b4b;">오늘 총 예상 벌금 합계:</span>
+        <span style="font-size: 1.8rem; font-weight: 900; color: #ff4b4b; margin-left: 10px;">{total_penalty:,}원</span>
+    </div>""", unsafe_allow_html=True)

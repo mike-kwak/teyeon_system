@@ -24,6 +24,7 @@ def generate_kdk_matches_v3(players_info, group_court_map, target_matches=4, con
         if not courts or len(g_players) < 4: continue
         
         match_counts = {p['name']: 0 for p in g_players}
+        rest_counts = {p['name']: 0 for p in g_players}
         partner_history = {p['name']: set() for p in g_players}
         
         start_dt = datetime.strptime("19:30", "%H:%M") 
@@ -39,10 +40,12 @@ def generate_kdk_matches_v3(players_info, group_court_map, target_matches=4, con
                 if p_s <= r_time < p_e and match_counts[p['name']] < target_matches:
                     available.append(p)
             
-            if len(available) < 4: continue
+            if len(available) < 4:
+                continue
             
-            # 경기 수가 적은 사람 우선 정렬
-            available.sort(key=lambda x: match_counts[x['name']])
+            # 경기 수가 적은 사람 우선, 동일 경기 수라면 휴식 횟수가 많은 사람(덜 보채는 사람) 우선
+            # -> 반대로 말하면 휴식 횟수가 적은 사람이 먼저 쉬게 됨
+            available.sort(key=lambda x: (match_counts[x['name']], -rest_counts[x['name']]))
             used_in_round = set()
             
             for court_num in courts:
@@ -112,13 +115,34 @@ def generate_kdk_matches_v3(players_info, group_court_map, target_matches=4, con
                     "pair_round": pair_match_counts.get(pair_key) if p2_info and any(p1 in pair for pair in fixed_partners) else None
                 })
 
-    return all_matches
+            # 라운드 종료 후 쉬는 사람들의 휴식 횟수 증가
+            for p in available:
+                if p['name'] not in used_in_round:
+                    rest_counts[p['name']] += 1
 
     return all_matches
 
-    return all_matches
-
-    return results
+def get_rankings_v3(matches, players_info):
+    """
+    전체 통합 순위 및 조별 순위를 한 번에 산출
+    """
+    overall = get_overall_rankings(matches, players_info)
+    
+    # 조별 분리
+    groups = {}
+    for p in players_info:
+        g = p.get('group', 'A')
+        if g not in groups: groups[g] = []
+        groups[g].append(p['name'])
+        
+    by_group = {}
+    for g_name, g_members in groups.items():
+        # overall에서 해당 조 멤버만 추출 후 순위 재매김
+        g_results = [dict(r) for r in overall if r["이름"] in g_members]
+        for i, r in enumerate(g_results): r["순위"] = i + 1
+        by_group[g_name] = g_results
+        
+    return overall, by_group
 
 def get_overall_rankings(matches, players_info):
     """
@@ -158,7 +182,7 @@ def get_overall_rankings(matches, players_info):
 
 def calculate_rewards_v2(overall_rankings):
     """
-    통합 순위 기반 상벌금 계산 (11인 3/3 분배 로직 포함)
+    통합 순위 기반 상벌금 계산
     """
     n = len(overall_rankings)
     fines = {} # {name: amount}
@@ -178,13 +202,15 @@ def calculate_rewards_v2(overall_rankings):
     
     fine_list = overall_rankings[-fine_count:]
     
-    # 3/3 분배 (11인 기준 하위 3명 5천원, 상위 3명 3천원)
-    # 일반적인 경우에도 절반으로 나누어 차등 적용
-    half = len(fine_list) // 2
+    # 벌금 차등 분배 (하위 50% 중 상위 절반 3000원, 하위 절반 5000원)
+    # 7명 기준: 3명 3000원, 4명 5000원 대응 (M // 2 로직)
+    m = len(fine_list)
+    m_3k = m // 2
+    
     for i, p in enumerate(fine_list):
-        if i < half: # 상대적 상위 벌금군
+        if i < m_3k:
             fines[p["이름"]] = 3000
-        else: # 최하위 벌금군
+        else:
             fines[p["이름"]] = 5000
             
     return fines, reward

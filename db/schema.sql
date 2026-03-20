@@ -26,8 +26,10 @@ CREATE TABLE IF NOT EXISTS members (
     club_id       UUID REFERENCES clubs(id) ON DELETE SET NULL,
     is_admin      BOOLEAN DEFAULT FALSE,
     is_guest      BOOLEAN DEFAULT FALSE,
+    role          TEXT DEFAULT 'Member' CHECK (role IN ('CEO', 'Staff', 'Member', 'Guest')),
     position      TEXT,
     mbti          TEXT,
+    birthdate     DATE,
     affiliation   TEXT,
     achievements  TEXT,
     joined_at     TIMESTAMPTZ DEFAULT now(),
@@ -121,6 +123,36 @@ CREATE INDEX IF NOT EXISTS idx_ranking_points_club_member ON ranking_points(club
 CREATE INDEX IF NOT EXISTS idx_ranking_points_awarded_at  ON ranking_points(awarded_at);
 
 -- ==========================================================
+
+-- 8. access_logs (접속 로그)
+CREATE TABLE IF NOT EXISTS access_logs (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    member_id     UUID REFERENCES members(id) ON DELETE SET NULL,
+    nickname      TEXT,
+    role          TEXT,
+    page_name     TEXT NOT NULL,
+    ip_address    TEXT,
+    created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_access_logs_created_at ON access_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_access_logs_member_id ON access_logs(member_id);
+
+-- 9. menu_permissions (메뉴 권한 설정)
+CREATE TABLE IF NOT EXISTS menu_permissions (
+    role              TEXT PRIMARY KEY,
+    accessible_pages  TEXT[] NOT NULL
+);
+
+-- 초기 권한 데이터 삽입
+INSERT INTO menu_permissions (role, accessible_pages) VALUES
+('CEO',    ARRAY['01_대시보드.py', '02_대진생성.py', '03_경기결과.py', '03_경기진행.py', '04_재무.py', '05_랭킹.py', '06_시드예측.py', '07_멤버정보.py', '08_멤버관리.py', '09_CEO관리.py', '00_공지사항.py']),
+('Staff',  ARRAY['01_대시보드.py', '02_대진생성.py', '03_경기결과.py', '03_경기진행.py', '04_재무.py', '05_랭킹.py', '06_시드예측.py', '07_멤버정보.py', '08_멤버관리.py', '00_공지사항.py']),
+('Member', ARRAY['01_대시보드.py', '03_경기결과.py', '05_랭킹.py', '06_시드예측.py', '07_멤버정보.py', '00_공지사항.py']),
+('Guest',  ARRAY['00_공지사항.py', '02_대진생성.py'])
+ON CONFLICT (role) DO UPDATE SET accessible_pages = EXCLUDED.accessible_pages;
+
+-- ==========================================================
 -- Row Level Security (RLS)
 -- ==========================================================
 
@@ -146,3 +178,42 @@ CREATE POLICY "members_insert_own" ON members
 -- RLS 비활성화 후, 운영 전환 시 정책 추가 권장
 -- ALTER TABLE kdk_sessions ENABLE ROW LEVEL SECURITY;
 -- ... (필요 시 추가)
+
+-- ==========================================================
+-- 10. tournament_results (대회 성과 관리)
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS tournament_results (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tournament_date   DATE NOT NULL,
+    tournament_name   TEXT NOT NULL,
+    rank              TEXT NOT NULL, -- 우승, 준우승, 3위 등
+    winners           TEXT NOT NULL, -- 수상자 명단
+    created_at        TIMESTAMPTZ DEFAULT now()
+);
+
+-- ==========================================================
+-- 11. menu_settings (메뉴 제어 설정)
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS menu_settings (
+    page_filename  TEXT PRIMARY KEY,
+    display_name   TEXT NOT NULL,
+    order_index    INT DEFAULT 99,
+    is_hidden      BOOLEAN DEFAULT FALSE
+);
+
+-- 초기 메뉴 데이터 삽입
+INSERT INTO menu_settings (page_filename, display_name, order_index) VALUES
+('00_공지사항.py', '📢 공지사항', 0),
+('01_대시보드.py', '🏠 대시보드', 1),
+('02_대진생성.py', '🎾 대진생성', 2),
+('03_경기진행.py', '🏃 경기진행', 3),
+('03_경기결과.py', '📊 경기결과', 4),
+('04_재무.py', '💰 재무', 5),
+('05_랭킹.py', '🔥 랭킹', 6),
+('06_시드예측.py', '⚡ 시드예측', 7),
+('07_멤버정보.py', '👤 멤버정보', 8),
+('08_멤버관리.py', '🛠️ 멤버관리', 9),
+('09_CEO관리.py', '👑 CEO관리', 10)
+ON CONFLICT (page_filename) DO UPDATE SET 
+    display_name = EXCLUDED.display_name,
+    order_index = EXCLUDED.order_index;

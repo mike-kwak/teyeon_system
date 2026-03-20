@@ -7,11 +7,12 @@ KATO 엑셀 업로드 → 회원 2명 포인트 합산 → 예상 복식 시드 
 import streamlit as st
 import pandas as pd
 
+from db.supabase_client import check_auth_and_log
+
 st.set_page_config(page_title="시드 예측 | TEYEON", page_icon="🔮", layout="wide")
 
-if not st.session_state.get("user"):
-    st.warning("로그인이 필요합니다.")
-    st.stop()
+# ── 권한 체크 및 로그 기록 ────────────────────────────────────────────────────────
+check_auth_and_log("06_시드예측.py")
 
 st.markdown("## 🔮 KATO 시드 예측")
 st.caption("KATO 공식 엑셀 파일을 업로드하면 2인 복식 예상 시드를 계산합니다.")

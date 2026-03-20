@@ -93,5 +93,5 @@ def get_kakao_user_info(access_token: str) -> dict:
 
 def logout(session_state) -> None:
     """st.session_state에서 인증 정보 제거."""
-    for key in ("user", "access_token", "is_admin"):
+    for key in ("user", "access_token", "is_admin", "role"):
         session_state.pop(key, None)

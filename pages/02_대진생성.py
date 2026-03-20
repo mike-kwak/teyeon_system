@@ -1,10 +1,13 @@
 import streamlit as st
-from db.supabase_client import get_all_members
+from db.supabase_client import get_all_members, check_auth_and_log
 import os
 from core_logic.kdk_engine import generate_kdk_matches_v3
 from datetime import datetime, time, timedelta
 
 st.set_page_config(page_title="대진 생성 | TEYEON", page_icon="⚙️", layout="wide")
+
+# ── 권한 체크 및 로그 기록 & 사이드바 ──
+check_auth_and_log("02_대진생성.py")
 
 st.markdown("""
 <style>
@@ -48,9 +51,7 @@ h3 { margin-top: 0px !important; margin-bottom: 10px !important; font-size: 1.1r
 </style>
 """, unsafe_allow_html=True)
 
-if not st.session_state.get("is_admin"):
-    st.error("운영진만 접근 가능한 페이지입니다.")
-    st.stop()
+CLUB_ID = os.environ.get("CLUB_ID", "")
 
 CLUB_ID = os.environ.get("CLUB_ID", "")
 
@@ -323,6 +324,14 @@ with col_right:
                 "match_rules": match_rules,
                 "concept": concept
             }
-            st.success("대진표가 완벽하게 생성되었습니다!")
+            st.session_state.match_created_msg = "🚀 대진표가 성공적으로 생성되었습니다! '경기 진행' 탭에서 확인하세요."
             st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+
+# ── 피드백 메시지 표시 ──────────────────────────────────────────────
+if st.session_state.get('match_created_msg'):
+    st.toast(st.session_state.match_created_msg)
+    st.balloons()
+    st.success(st.session_state.match_created_msg)
+    del st.session_state.match_created_msg
+
+st.markdown('</div>', unsafe_allow_html=True)

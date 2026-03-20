@@ -8,16 +8,16 @@ import streamlit as st
 import pandas as pd
 import os
 from datetime import datetime, timezone
-from db.supabase_client import get_ranking, add_ranking_points, get_all_members
+from db.supabase_client import get_ranking, add_ranking_points, get_all_members, check_auth_and_log
 
 st.set_page_config(page_title="랭킹 | TEYEON", page_icon="🏆", layout="wide")
 
-if not st.session_state.get("user"):
-    st.warning("로그인이 필요합니다.")
-    st.stop()
+# ── 권한 체크 및 로그 기록 ────────────────────────────────────────────────────────
+check_auth_and_log("05_랭킹.py")
 
 CLUB_ID  = os.environ.get("CLUB_ID", "")
-is_admin = st.session_state.get("is_admin", False)
+role = st.session_state.get("role", "Member")
+is_admin = role in ("CEO", "Staff")
 today    = datetime.now(timezone.utc)
 
 st.markdown("## 🏆 랭킹")

@@ -1,12 +1,11 @@
 import streamlit as st
-from db.supabase_client import get_all_members, update_member_info
+from db.supabase_client import get_all_members, update_member_info, check_auth_and_log
 import os
 
 st.set_page_config(page_title="멤버 관리 | TEYEON", page_icon="📝", layout="wide")
 
-if not st.session_state.get("is_admin"):
-    st.error("운영진만 접근 가능한 페이지입니다.")
-    st.stop()
+# ── 권한 체크 및 로그 기록 ────────────────────────────────────────────────────────
+check_auth_and_log("08_멤버관리.py")
 
 CLUB_ID = os.environ.get("CLUB_ID", "")
 members = get_all_members(CLUB_ID)

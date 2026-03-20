@@ -1,9 +1,12 @@
 import streamlit as st
-from db.supabase_client import get_all_members
+from db.supabase_client import get_all_members, check_auth_and_log
 import os
 import base64
 
 st.set_page_config(page_title="멤버 정보 | TEYEON", page_icon="👥", layout="wide")
+
+# ── 권한 체크 및 로그 기록 ────────────────────────────────────────────────────────
+check_auth_and_log("07_멤버정보.py")
 
 # 로컬 이미지 표시를 위한 함수 (Storage 업로드 실패 대비)
 def get_local_img_base64(path):
