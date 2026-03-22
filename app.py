@@ -236,26 +236,48 @@ def _handle_oauth_callback():
 
 # ── 랜딩 페이지 (비로그인) ────────────────────────────────────────────────
 def _render_landing():
+    import base64, pathlib
+
+    def _img_to_b64(path: str) -> str:
+        try:
+            data = pathlib.Path(path).read_bytes()
+            return base64.b64encode(data).decode()
+        except Exception:
+            return ""
+
     col1, col2, col3 = st.columns([1, 4, 1])
     with col2:
-        st.markdown("""
-        <div class="logo-container">
-            <div class="teyeon-logo">
-                <div class="tennis-ball-icon">
-                    <svg viewBox="0 0 100 100" width="100" height="100">
-                        <circle cx="50" cy="50" r="48" fill="#FEE500" />
-                        <path d="M25,20 Q50,50 25,80" fill="none" stroke="#666" stroke-width="2.5" />
-                        <path d="M75,20 Q50,50 75,80" fill="none" stroke="#666" stroke-width="2.5" />
-                    </svg>
-                </div>
-                <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                    <div class="logo-main-text">테연</div>
-                    <div class="logo-sub-text">테니스</div>
-                </div>
+        # ── 로고 이미지 (텍스트 대신 이미지 → 자동번역 방지) ──
+        logo_b64 = _img_to_b64("assets/logo.png")
+        if logo_b64:
+            st.markdown(f"""
+            <div class="logo-container">
+                <img src="data:image/png;base64,{logo_b64}"
+                     alt="TEYEON TENNIS"
+                     style="max-width:320px; width:90%; border-radius:20px; margin-bottom:18px;" />
+                <div class="since-badge">SINCE 2025</div>
             </div>
-            <div class="since-badge">SINCE 2025</div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+        else:
+            # 이미지 로드 실패 시 폴백
+            st.markdown("""
+            <div class="logo-container">
+                <div class="teyeon-logo">
+                    <div class="tennis-ball-icon">
+                        <svg viewBox="0 0 100 100" width="80" height="80">
+                            <circle cx="50" cy="50" r="48" fill="#CCFF00" />
+                            <path d="M25,20 Q50,50 25,80" fill="none" stroke="#666" stroke-width="2.5" />
+                            <path d="M75,20 Q50,50 75,80" fill="none" stroke="#666" stroke-width="2.5" />
+                        </svg>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                        <div class="logo-main-text">TEYEON</div>
+                        <div class="logo-sub-text">TENNIS</div>
+                    </div>
+                </div>
+                <div class="since-badge">SINCE 2025</div>
+            </div>
+            """, unsafe_allow_html=True)
 
         st.markdown("---")
         st.markdown("#### ✨ Pro Max 주요 기능")
