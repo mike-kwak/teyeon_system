@@ -512,27 +512,27 @@ div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-
     cols = st.columns(len(HOME_MENU))
     for col, item in zip(cols, HOME_MENU):
         locked = not can_access(item["min_role"])
-            coming = item["coming_soon"]
-            if coming:
-                div_class = "icon-btn icon-btn-coming"
-                badge = "\n🚧"
-            elif locked:
-                div_class = "icon-btn icon-btn-locked"
-                badge = "\n🔒"
-            else:
-                div_class = "icon-btn"
-                badge = ""
-            btn_label = f"{item['icon']}\n{item['label']}{badge}"
-            with col:
-                st.markdown(f'<div class="{div_class}">', unsafe_allow_html=True)
-                if st.button(btn_label, key=f"home_{item['icon']}", use_container_width=True):
-                    if coming:
-                        st.toast("🚧 준비 중입니다.")
-                    elif locked:
-                        st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
-                    elif item["page"]:
-                        st.switch_page(item["page"])
-                st.markdown("</div>", unsafe_allow_html=True)
+        coming = item["coming_soon"]
+        if coming:
+            div_class = "icon-btn icon-btn-coming"
+            badge = "\n🚧"
+        elif locked:
+            div_class = "icon-btn icon-btn-locked"
+            badge = "\n🔒"
+        else:
+            div_class = "icon-btn"
+            badge = ""
+        btn_label = f"{item['icon']}\n{item['label']}{badge}"
+        with col:
+            st.markdown(f'<div class="{div_class}">', unsafe_allow_html=True)
+            if st.button(btn_label, key=f"home_{item['icon']}", use_container_width=True):
+                if coming:
+                    st.toast("🚧 준비 중입니다.")
+                elif locked:
+                    st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
+                elif item["page"]:
+                    st.switch_page(item["page"])
+            st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
