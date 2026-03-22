@@ -16,31 +16,33 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-def _get_secret(key: str, default: str = "") -> str:
-    """st.secrets → os.environ 순서로 값을 읽습니다 (Streamlit Cloud & 로컬 호환)."""
-    try:
-        import streamlit as st
-        return st.secrets.get(key) or os.environ.get(key, default)
-    except Exception:
-        return os.environ.get(key, default)
-
-
-KAKAO_CLIENT_ID     = _get_secret("KAKAO_CLIENT_ID")
-KAKAO_CLIENT_SECRET = _get_secret("KAKAO_CLIENT_SECRET")
-KAKAO_REDIRECT_URI  = _get_secret("KAKAO_REDIRECT_URI", "http://localhost:8501")
-
 # ── 카카오 API 엔드포인트 ─────────────────────────────────────────────────
 _KAKAO_AUTH_BASE  = "https://kauth.kakao.com/oauth/authorize"
 _KAKAO_TOKEN_URL  = "https://kauth.kakao.com/oauth/token"
 _KAKAO_USER_URL   = "https://kapi.kakao.com/v2/user/me"
 
 
+def _get_secret(key: str, default: str = "") -> str:
+    """st.secrets → os.environ 순서로 값을 읽습니다.
+    ⚠️ 반드시 함수 내부에서만 호출 (모듈 로드 시점에 st가 미초기화 상태일 수 있음).
+    """
+    try:
+        import streamlit as st
+        val = st.secrets.get(key)
+        if val:
+            return val
+    except Exception:
+        pass
+    return os.environ.get(key, default)
+
+
 def get_kakao_auth_url() -> str:
     """카카오 로그인 인가 URL 생성. 버튼 href로 사용."""
+    client_id    = _get_secret("KAKAO_CLIENT_ID")
+    redirect_uri = _get_secret("KAKAO_REDIRECT_URI", "http://localhost:8501")
     params = (
-        f"?client_id={KAKAO_CLIENT_ID}"
-        f"&redirect_uri={KAKAO_REDIRECT_URI}"
+        f"?client_id={client_id}"
+        f"&redirect_uri={redirect_uri}"
         f"&response_type=code"
     )
     return _KAKAO_AUTH_BASE + params
@@ -52,15 +54,19 @@ def exchange_code_for_token(code: str) -> dict:
     반환: {"access_token": ..., "refresh_token": ..., ...}
     실패 시 빈 dict 반환.
     """
+    client_id     = _get_secret("KAKAO_CLIENT_ID")
+    client_secret = _get_secret("KAKAO_CLIENT_SECRET")
+    redirect_uri  = _get_secret("KAKAO_REDIRECT_URI", "http://localhost:8501")
+
     payload = {
         "grant_type":   "authorization_code",
-        "client_id":    KAKAO_CLIENT_ID,
-        "redirect_uri": KAKAO_REDIRECT_URI,
+        "client_id":    client_id,
+        "redirect_uri": redirect_uri,
         "code":         code,
     }
-    if KAKAO_CLIENT_SECRET:
-        payload["client_secret"] = KAKAO_CLIENT_SECRET
-        
+    if client_secret:
+        payload["client_secret"] = client_secret
+
     try:
         res = requests.post(_KAKAO_TOKEN_URL, data=payload, timeout=10)
         res.raise_for_status()
@@ -91,10 +97,10 @@ def get_kakao_user_info(access_token: str) -> dict:
         profile       = kakao_account.get("profile", {})
 
         return {
-            "kakao_id":     raw.get("id"),
-            "nickname":     profile.get("nickname", ""),
+            "kakao_id":      raw.get("id"),
+            "nickname":      profile.get("nickname", ""),
             "profile_image": profile.get("profile_image_url"),
-            "email":        kakao_account.get("email"),
+            "email":         kakao_account.get("email"),
         }
     except requests.RequestException as e:
         print(f"[auth] 사용자 정보 조회 실패: {e}")
