@@ -69,8 +69,35 @@ st.markdown("""
     margin-bottom: 15px;
     border: 1px solid rgba(204, 255, 0, 0.2);
 }
+}
 </style>
 """, unsafe_allow_html=True)
+
+# ── 햅틱 피드백 (Web Vibration API) 주입 ──
+import streamlit.components.v1 as components
+components.html("""
+<script>
+    const doc = window.parent.document;
+    if (!window.parent._teyeon_vibrate_init) {
+        window.parent._teyeon_vibrate_init = true;
+        doc.addEventListener('pointerdown', function(e) {
+            let el = e.target;
+            while(el && el.tagName !== 'BUTTON') {
+                el = el.parentElement;
+            }
+            if (!el) return;
+            let text = el.innerText || "";
+            if (text.includes('➕') || text.includes('➖') || text.includes('➖ ')) {
+                if (window.parent.navigator.vibrate) window.parent.navigator.vibrate(15); // 경쾌하고 짧은 진동
+            } else if (text.includes('결과 저장')) {
+                if (window.parent.navigator.vibrate) window.parent.navigator.vibrate([40, 30, 40]); // 완료 느낌의 묵직한 패턴 진동
+            } else {
+                if (window.parent.navigator.vibrate) window.parent.navigator.vibrate(5); // 기본 버튼 진동
+            }
+        });
+    }
+</script>
+""", height=0, width=0)
 
 if "kdk_all_data" not in st.session_state:
     st.warning("먼저 '대진 생성' 페이지에서 대진표를 생성해주세요.")

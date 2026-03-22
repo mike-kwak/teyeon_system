@@ -301,6 +301,16 @@ def get_ranking(club_id: str, start_date: str = None, end_date: str = None) -> l
 
     rows = query.execute().data or []
 
+def update_kdk_match_score(match_id: str, score1: int, score2: int, status: str = "complete"):
+    """KDK 개별 경기 점수 및 상태 업데이트"""
+    client = get_client()
+    res = client.table("kdk_matches").update({
+        "score1": score1,
+        "score2": score2,
+        "status": status
+    }).eq("id", match_id).execute()
+    return res.data
+
     # Python 쪽에서 집계 (Supabase Free tier에서 GROUP BY RPC 없이 처리)
     aggregated: dict[str, dict] = {}
     for row in rows:
