@@ -500,3 +500,29 @@ def check_auth_and_log(page_name: str):
     if page_name not in allowed_pages:
         st.error(f"'{page_name}' 페이지에 접근할 권한이 없습니다. (현재 권한: {role})")
         st.stop()
+
+    # ── 상단 뒤로가기 버튼 (모든 서브페이지 공통) ──────────────────────────
+    st.markdown("""
+    <style>
+    .back-btn-wrap { margin-bottom: 8px; }
+    .back-btn-wrap a {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 0.82rem; font-weight: 700;
+        color: #aab8d4 !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease;
+    }
+    .back-btn-wrap a:hover {
+        background: rgba(204,255,0,0.1);
+        border-color: rgba(204,255,0,0.4);
+        color: #CCFF00 !important;
+    }
+    </style>
+    <div class="back-btn-wrap">
+        <a href="app.py" target="_self">← 홈으로</a>
+    </div>
+    """, unsafe_allow_html=True)

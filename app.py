@@ -166,6 +166,13 @@ html, body, [class*="css"] {
     border-radius: 50%;
     border: 2px solid #FEE500;
 }
+
+/* ── 데스크톱에서 사이드바 숨기기 버튼 제거 (항상 펼쳐진 상태 유지) ── */
+@media (min-width: 768px) {
+    [data-testid="collapsedControl"] { display: none !important; }
+    button[data-testid="baseButton-headerNoPadding"] { display: none !important; }
+    section[data-testid="stSidebar"] > div:first-child { min-width: 250px !important; }
+}
 </style>
 """, unsafe_allow_html=True)
 
