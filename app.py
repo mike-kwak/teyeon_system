@@ -173,6 +173,19 @@ html, body, [class*="css"] {
     button[data-testid="baseButton-headerNoPadding"] { display: none !important; }
     section[data-testid="stSidebar"] > div:first-child { min-width: 250px !important; }
 }
+
+/* 스코어 입력창 가로 정렬 강제 */
+div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="column"] {
+    width: auto !important;
+    flex: 1 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -481,6 +494,19 @@ div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-
     div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) > div[data-testid="column"] {
         flex: 1 1 calc(33.333% - 10px) !important;
     }
+}
+
+/* 스코어 입력창 가로 정렬 강제 */
+div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="column"] {
+    width: auto !important;
+    flex: 1 !important;
 }
 </style>
 """, unsafe_allow_html=True)

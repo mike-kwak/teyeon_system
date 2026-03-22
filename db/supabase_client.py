@@ -57,6 +57,14 @@ def upsert_member(kakao_id: int, nickname: str, profile_image: str = None, email
             data["role"] = "CEO"
         res = client.table("members").update(data).eq("kakao_id", kakao_id).execute()
         return res.data[0] if res.data else {}
+
+def delete_kdk_session(session_id: str):
+    """KDK 세션 및 관련 데이터(매치, 결과) 삭제 (Archive)."""
+    client = get_client()
+    client.table("kdk_matches").delete().eq("session_id", session_id).execute()
+    client.table("kdk_results").delete().eq("session_id", session_id).execute()
+    client.table("kdk_sessions").delete().eq("id", session_id).execute()
+
     
     # 2. 임시 멤버 연결 (중략...)
     temp_member = client.table("members").select("*").eq("nickname", nickname).lt("kakao_id", 0).execute()
@@ -114,7 +122,7 @@ def get_all_members(club_id: str = None) -> list[dict]:
 
 
 # ── KDK 세션 헬퍼 ────────────────────────────────────────────────────────
-def create_kdk_session(club_id: str, session_date: str, created_by: str, note: str = "", award_config: dict = None) -> dict:
+def create_kdk_session(club_id: str, session_date: str, created_by: str, note: str = "", award_config: dict = None, title: str = "") -> dict:
     """새 KDK 세션을 생성하고 반환."""
     client = get_client()
     data = {
@@ -123,6 +131,7 @@ def create_kdk_session(club_id: str, session_date: str, created_by: str, note: s
         "created_by": created_by,
         "note": note,
         "status": "draft",
+        "title": title or f"대진표_{session_date}",
     }
     if award_config:
         # award_config 컬럼이 없을 수도 있으므로 note에 백업 저장하거나 
