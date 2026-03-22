@@ -460,6 +460,20 @@ def _render_home(user: dict, role: str):
     opacity: 0.32 !important; cursor: default !important;
 }
 .icon-btn-coming > div.stButton > button:hover { transform: none !important; }
+
+/* ── 모바일에서 아이콘들이 1줄로 세로로 떨어지는 강제 정렬 방지 (2열 고정) ── */
+@media (max-width: 600px) {
+    div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) > div[data-testid="column"] {
+        width: calc(50% - 4px) !important;
+        flex: 0 0 calc(50% - 4px) !important;
+        min-width: 0 !important;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -485,10 +499,10 @@ def _render_home(user: dict, role: str):
 <div class="at-grid-title">⚡ 빠른 이동</div>
 """, unsafe_allow_html=True)
 
-    # ── 3×2 아이콘 그리드 ──
-    rows = [HOME_MENU[i:i+3] for i in range(0, len(HOME_MENU), 3)]
+    # ── 2×3 아이콘 그리드 ──
+    rows = [HOME_MENU[i:i+2] for i in range(0, len(HOME_MENU), 2)]
     for row in rows:
-        cols = st.columns(3)
+        cols = st.columns(2)
         for col, item in zip(cols, row):
             locked = not can_access(item["min_role"])
             coming = item["coming_soon"]
