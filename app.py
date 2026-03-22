@@ -461,17 +461,25 @@ def _render_home(user: dict, role: str):
 }
 .icon-btn-coming > div.stButton > button:hover { transform: none !important; }
 
-/* ── 모바일에서 아이콘들이 1줄로 세로로 떨어지는 강제 정렬 방지 (2열 고정) ── */
-@media (max-width: 600px) {
-    div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) {
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
+/* ── 완벽 반응형(Responsive Fluid) 그리드: Z폴드/태블릿/다양한 해상도 완벽 대응 ── */
+div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+/* 기본 상태 (Z폴드 접힌 화면이나 좁은 스마트폰): 2열 자동 꽉 채우기 & 글자 잘림 방지 */
+div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) > div[data-testid="column"] {
+    flex: 1 1 calc(50% - 10px) !important; 
+    min-width: 120px !important; /* 화면이 아무리 좁아져도 아이콘 텍스트 유지 */
+    width: auto !important;
+}
+
+/* 중간 너비 이상의 화면 (Z폴드 펼침, 넓은 폰 가로모드, 태블릿): 부드럽게 3열로 자동 재배치 */
+@media (min-width: 480px) {
     div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) > div[data-testid="column"] {
-        width: calc(50% - 4px) !important;
-        flex: 0 0 calc(50% - 4px) !important;
-        min-width: 0 !important;
+        flex: 1 1 calc(33.333% - 10px) !important;
     }
 }
 </style>
@@ -499,12 +507,11 @@ def _render_home(user: dict, role: str):
 <div class="at-grid-title">⚡ 빠른 이동</div>
 """, unsafe_allow_html=True)
 
-    # ── 2×3 아이콘 그리드 ──
-    rows = [HOME_MENU[i:i+2] for i in range(0, len(HOME_MENU), 2)]
-    for row in rows:
-        cols = st.columns(2)
-        for col, item in zip(cols, row):
-            locked = not can_access(item["min_role"])
+    # ── 완벽 반응형(Fluid) 아이콘 그리드 ──
+    # 단일 블록 안에 전부 던져놓고, CSS flex-wrap의 힘으로 2열/3열을 화면 크기별로 자동 계산하게 만듭니다.
+    cols = st.columns(len(HOME_MENU))
+    for col, item in zip(cols, HOME_MENU):
+        locked = not can_access(item["min_role"])
             coming = item["coming_soon"]
             if coming:
                 div_class = "icon-btn icon-btn-coming"
