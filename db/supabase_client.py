@@ -14,15 +14,24 @@ from supabase import create_client, Client
 load_dotenv()
 
 
+def _get_secret(key: str) -> str | None:
+    """st.secrets → os.environ 순서로 시크릿 값을 가져옵니다 (Streamlit Cloud & 로컬 호환)."""
+    try:
+        import streamlit as st
+        return st.secrets.get(key) or os.environ.get(key)
+    except Exception:
+        return os.environ.get(key)
+
+
 # ── 싱글턴 클라이언트 ────────────────────────────────────────────────────
 @lru_cache(maxsize=1)
 def get_client() -> Client:
     """Supabase 클라이언트를 최초 1회만 생성하여 재사용."""
-    url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_ANON_KEY")
+    url = _get_secret("SUPABASE_URL")
+    key = _get_secret("SUPABASE_ANON_KEY")
     if not url or not key:
         raise EnvironmentError(
-            "SUPABASE_URL과 SUPABASE_ANON_KEY를 .env 파일에 설정해주세요."
+            "SUPABASE_URL과 SUPABASE_ANON_KEY 환경변수를 설정해주세요."
         )
     return create_client(url, key)
 
@@ -105,18 +114,24 @@ def get_all_members(club_id: str = None) -> list[dict]:
 
 
 # ── KDK 세션 헬퍼 ────────────────────────────────────────────────────────
-def create_kdk_session(club_id: str, session_date: str, created_by: str, note: str = "") -> dict:
+def create_kdk_session(club_id: str, session_date: str, created_by: str, note: str = "", award_config: dict = None) -> dict:
     """새 KDK 세션을 생성하고 반환."""
     client = get_client()
+    data = {
+        "club_id": club_id,
+        "session_date": session_date,
+        "created_by": created_by,
+        "note": note,
+        "status": "draft",
+    }
+    if award_config:
+        # award_config 컬럼이 없을 수도 있으므로 note에 백업 저장하거나 
+        # 테이블 컬럼이 있다고 가정 (보통 JSONB 타입 권장)
+        data["award_config"] = award_config
+        
     res = (
         client.table("kdk_sessions")
-        .insert({
-            "club_id": club_id,
-            "session_date": session_date,
-            "created_by": created_by,
-            "note": note,
-            "status": "draft",
-        })
+        .insert(data)
         .execute()
     )
     return res.data[0] if res.data else {}
@@ -156,6 +171,35 @@ def update_kdk_session_status(session_id: str, status: str) -> dict:
         client.table("kdk_sessions")
         .update({"status": status})
         .eq("id", session_id)
+        .execute()
+    )
+    return res.data[0] if res.data else {}
+
+
+# ── KDK 매치 헬퍼 ────────────────────────────────────────────────────────
+def upsert_kdk_matches(matches: list[dict]) -> list[dict]:
+    """매치 목록 배치 upsert (id가 있으면 update, 없으면 insert)."""
+    client = get_client()
+    res = (
+        client.table("kdk_matches")
+        .upsert(matches)
+        .execute()
+    )
+    return res.data or []
+
+
+def update_kdk_match_score(match_id: str, score1: int, score2: int, status: str = "complete") -> dict:
+    """단일 매치 점수 업데이트."""
+    client = get_client()
+    res = (
+        client.table("kdk_matches")
+        .update({
+            "score1": score1,
+            "score2": score2,
+            "status": status,
+            "updated_at": "now()"
+        })
+        .eq("id", match_id)
         .execute()
     )
     return res.data[0] if res.data else {}

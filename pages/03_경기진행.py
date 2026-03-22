@@ -105,54 +105,63 @@ st.divider()
 
 # ── VIEW: 대진표 (Card UI) ──────────────────────────────────────────────────
 if st.session_state.active_view == "대진표":
+    # A조, B조를 가로로 배치 (A는 왼쪽, B는 오른쪽 고정)
+    col_a, col_b = st.columns(2)
+    
+    # 조별 맵핑
+    group_cols = {"A": col_a, "B": col_b}
+    
+    # 만약 A, B 외의 다른 조가 있다면? (확장성 대비)
     for g in groups:
-        # 헤더: 중앙 정렬 & 가로 한 줄 최적화
-        st.markdown(f"""
-        <div style="text-align: center; margin-bottom: 25px; line-height: 1.2;">
-            <div style="font-size: 1.5rem; font-weight: 900; color: white;">🎾 {g}조 경기 현황</div>
-            <div style="font-size: 0.7rem; color: #aab8d4; font-weight: 500; letter-spacing: -0.2px;">
-                (모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승...)
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        g_ms = [m for m in matches if m["group"] == g]
-        g_ms.sort(key=lambda x: (x["round"], x["court"]))
-        
-        for m in g_ms:
-            idx = matches.index(m)
-            p_round = f"/ {m['pair_round']}" if m.get('pair_round') else ""
-            # 가독성을 위해 흰색 카드에서는 진한 네이비 사용, 점수 사이 여백(띄어쓰기) 강조
-            res_display = f"{m['score1']} &nbsp; : &nbsp; {m['score2']}" if m["status"] == "complete" else "VS"
-            score_color = "#0A0E1A" if m["status"] == "complete" else "#adb5bd"
-            
-            # 한줄로 길게 가로 레이아웃 (3칼럼: 팀1 | 점수 | 팀2)
+        target_col = group_cols.get(g, st.container())
+        with target_col:
+            # 헤더: 중앙 정렬 & 가로 한 줄 최적화
             st.markdown(f"""
-            <div class="match-card">
-                <div class="match-card-header" style="font-size: 0.7rem; margin-bottom: 8px; color: #888;">
-                    <div>코트 {m['court']} | {m['round']} {p_round}</div>
-                </div>
-                <div class="match-card-body" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                    <div style="flex: 1.4; font-weight: 800; font-size: 1.05rem; line-height: 1.1; text-align: left; overflow-wrap: break-word; color: #1a1a2e; padding-right: 5px;">
-                        {' & '.join(m['team1'])}
-                    </div>
-                    <div style="flex: 0.6; text-align: center; font-weight: 900; font-size: 1.5rem; color: {score_color}; letter-spacing: -1.5px; min-width: 75px; white-space: nowrap;">
-                        {res_display}
-                    </div>
-                    <div style="flex: 1.4; font-weight: 800; font-size: 1.05rem; line-height: 1.1; text-align: right; overflow-wrap: break-word; color: #1a1a2e; padding-left: 5px;">
-                        {' & '.join(m['team2'])}
-                    </div>
+            <div style="text-align: center; margin-bottom: 25px; line-height: 1.2;">
+                <div style="font-size: 1.5rem; font-weight: 900; color: white;">🎾 {g}조 경기 현황</div>
+                <div style="font-size: 0.7rem; color: #aab8d4; font-weight: 500; letter-spacing: -0.2px;">
+                    (모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승...)
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            # 투명 버튼을 카드 뒤에 배치하여 클릭 가능하게 함
-            if st.button(f"점수 입력 / 수정 (코트 {m['court']} - {idx})", key=f"edit_card_{idx}", use_container_width=True):
-                st.session_state.editing_match_idx = idx
-                st.session_state.active_view = "입력"
-                st.rerun()
-            st.write("") # 간격
-        st.divider()
+            g_ms = [m for m in matches if m["group"] == g]
+            g_ms.sort(key=lambda x: (x["round"], x["court"]))
+            
+            for m in g_ms:
+                idx = matches.index(m)
+                p_round = f"/ {m['pair_round']}" if m.get('pair_round') else ""
+                # 가독성을 위해 흰색 카드에서는 진한 네이비 사용, 점수 사이 여백(띄어쓰기) 강조
+                res_display = f"{m['score1']} &nbsp; : &nbsp; {m['score2']}" if m["status"] == "complete" else "VS"
+                score_color = "#0A0E1A" if m["status"] == "complete" else "#adb5bd"
+                
+                # 한줄로 길게 가로 레이아웃 (3칼럼: 팀1 | 점수 | 팀2)
+                st.markdown(f"""
+                <div class="match-card">
+                    <div class="match-card-header" style="font-size: 0.7rem; margin-bottom: 8px; color: #888;">
+                        <div>코트 {m['court']} | {m['round']} {p_round}</div>
+                    </div>
+                    <div class="match-card-body" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div style="flex: 1.4; font-weight: 800; font-size: 1.05rem; line-height: 1.1; text-align: left; overflow-wrap: break-word; color: #1a1a2e; padding-right: 5px;">
+                            {' & '.join(m['team1'])}
+                        </div>
+                        <div style="flex: 0.6; text-align: center; font-weight: 900; font-size: 1.5rem; color: {score_color}; letter-spacing: -1.5px; min-width: 75px; white-space: nowrap;">
+                            {res_display}
+                        </div>
+                        <div style="flex: 1.4; font-weight: 800; font-size: 1.05rem; line-height: 1.1; text-align: right; overflow-wrap: break-word; color: #1a1a2e; padding-left: 5px;">
+                            {' & '.join(m['team2'])}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # 투명 버튼을 카드 뒤에 배치하여 클릭 가능하게 함
+                if st.button(f"점수 입력 / 수정 (코트 {m['court']} - {idx})", key=f"edit_card_{idx}", use_container_width=True):
+                    st.session_state.editing_match_idx = idx
+                    st.session_state.active_view = "입력"
+                    st.rerun()
+                st.write("") # 간격
+            st.divider()
 
     # ── 카톡 공유 ──────────────────
     st.markdown("### 💬 카톡 공유용 텍스트")
@@ -205,6 +214,17 @@ elif st.session_state.active_view == "입력" and st.session_state.editing_match
         m["score1"] = st.session_state.s1_val
         m["score2"] = st.session_state.s2_val
         m["status"] = "complete"
+        
+        # --- DB 업데이트 로직 추가 ---
+        match_id = m.get("id") # DB의 UUID
+        if match_id:
+            from db.supabase_client import update_kdk_match_score
+            try:
+                update_kdk_match_score(match_id, m["score1"], m["score2"], "complete")
+                st.toast("💾 DB에 점수가 저장되었습니다!")
+            except Exception as e:
+                st.error(f"❌ DB 저장 오류: {e}")
+        
         st.session_state.editing_match_idx = None
         st.session_state.active_view = "대진표"
         st.success("점수가 성공적으로 저장되었습니다!")

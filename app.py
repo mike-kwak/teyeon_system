@@ -331,6 +331,162 @@ def _render_sidebar():
             st.rerun()
 
 
+# ── Action Tower 홈 렌더링 ──────────────────────────────────────────────────
+ROLE_LEVEL = {"CEO": 4, "Staff": 3, "Member": 2, "Guest": 1}
+ROLE_LABELS = {
+    "CEO":    ("👑 최고관리자", "#FFD700"),
+    "Staff":  ("🔧 운영진",     "#CCFF00"),
+    "Member": ("🎾 정회원",     "#60EFFF"),
+    "Guest":  ("🔓 게스트",     "#aab8d4"),
+}
+HOME_MENU = [
+    dict(icon="👤", label="멤버\n정보",   page="pages/07_멤버정보.py",  min_role="Member", coming_soon=False),
+    dict(icon="🎾", label="KDK\n대진표",  page="pages/02_대진생성.py",  min_role="Staff",  coming_soon=False),
+    dict(icon="🏆", label="실시간\n랭킹",  page="pages/05_랭킹.py",      min_role="Member", coming_soon=False),
+    dict(icon="💰", label="상벌금\n현황",  page="pages/04_재무.py",      min_role="Member", coming_soon=False),
+    dict(icon="🏅", label="대회\n모드",    page=None,                    min_role="Member", coming_soon=True),
+    dict(icon="💬", label="커뮤니티",      page=None,                    min_role="Member", coming_soon=True),
+]
+
+def _render_home(user: dict, role: str):
+    nickname    = user.get("nickname", "회원")
+    profile_img = user.get("profile_image", "")
+    initials    = nickname[:1] if nickname else "?"
+    role_text, role_color = ROLE_LABELS.get(role, ("🔓 게스트", "#aab8d4"))
+
+    def can_access(min_role):
+        return ROLE_LEVEL.get(role, 1) >= ROLE_LEVEL.get(min_role, 2)
+
+    # ── CSS ──
+    st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+.at-profile-card {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, rgba(26,37,61,0.95), rgba(10,14,26,0.98));
+    border: 1px solid rgba(204,255,0,0.22); border-radius: 22px;
+    padding: 18px 20px; margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+}
+.at-profile-info { display: flex; align-items: center; gap: 14px; }
+.at-avatar {
+    width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
+    border: 2.5px solid #CCFF00;
+}
+.at-avatar-init {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: linear-gradient(135deg,#1a253d,#2a3f5f);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 1.4rem; color: #CCFF00;
+    border: 2.5px solid #CCFF00;
+}
+.at-name {
+    font-family: 'Outfit',sans-serif; font-weight: 900;
+    font-size: 1.05rem; color: #fff; line-height: 1.25;
+}
+.at-badge {
+    display: inline-block; font-size: 0.68rem; font-weight: 700;
+    padding: 2px 10px; border-radius: 30px; margin-top: 5px; border: 1px solid;
+}
+.at-ceo-btn {
+    background: linear-gradient(135deg,#CCFF00,#a8d400);
+    color: #0A0E1A !important; font-weight: 900 !important;
+    font-size: 0.78rem !important; border: none !important;
+    border-radius: 14px !important; padding: 9px 15px !important;
+    cursor: pointer; white-space: nowrap; text-decoration: none;
+    box-shadow: 0 4px 16px rgba(204,255,0,0.35);
+}
+.at-grid-title {
+    font-family: 'Outfit',sans-serif; font-size: 0.72rem; font-weight: 700;
+    color: #aab8d4; letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 10px;
+}
+/* 아이콘 그리드 버튼 스타일 */
+.icon-btn > div.stButton > button {
+    width: 100% !important; min-height: 90px !important;
+    border-radius: 18px !important;
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.09) !important;
+    color: #d0ddf0 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.73rem !important; font-weight: 700 !important;
+    line-height: 1.4 !important; transition: all 0.25s ease !important;
+    padding: 14px 6px !important; white-space: pre-line !important;
+}
+.icon-btn > div.stButton > button:hover {
+    background: rgba(204,255,0,0.09) !important;
+    border-color: rgba(204,255,0,0.5) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(204,255,0,0.18) !important;
+    color: #fff !important;
+}
+.icon-btn-locked > div.stButton > button {
+    opacity: 0.42 !important; cursor: not-allowed !important;
+}
+.icon-btn-locked > div.stButton > button:hover {
+    transform: none !important; background: rgba(255,255,255,0.04) !important;
+    border-color: rgba(255,255,255,0.09) !important; box-shadow: none !important;
+}
+.icon-btn-coming > div.stButton > button {
+    opacity: 0.32 !important; cursor: default !important;
+}
+.icon-btn-coming > div.stButton > button:hover { transform: none !important; }
+</style>
+""", unsafe_allow_html=True)
+
+    # ── 프로필 카드 ──
+    if profile_img:
+        avatar = f'<img class="at-avatar" src="{profile_img}">'
+    else:
+        avatar = f'<div class="at-avatar-init">{initials}</div>'
+
+    ceo_btn = f'<a href="pages/09_CEO관리.py" class="at-ceo-btn">⚙️ 설정 마스터</a>' if role == "CEO" else ""
+
+    st.markdown(f"""
+<div class="at-profile-card">
+    <div class="at-profile-info">
+        {avatar}
+        <div>
+            <div class="at-name">⭐ {nickname} 님<br>안녕하세요!</div>
+            <div class="at-badge" style="color:{role_color};border-color:{role_color}44;">{role_text}</div>
+        </div>
+    </div>
+    {ceo_btn}
+</div>
+<div class="at-grid-title">⚡ 빠른 이동</div>
+""", unsafe_allow_html=True)
+
+    # ── 3×2 아이콘 그리드 ──
+    rows = [HOME_MENU[i:i+3] for i in range(0, len(HOME_MENU), 3)]
+    for row in rows:
+        cols = st.columns(3)
+        for col, item in zip(cols, row):
+            locked = not can_access(item["min_role"])
+            coming = item["coming_soon"]
+            if coming:
+                div_class = "icon-btn icon-btn-coming"
+                badge = "\n🚧"
+            elif locked:
+                div_class = "icon-btn icon-btn-locked"
+                badge = "\n🔒"
+            else:
+                div_class = "icon-btn"
+                badge = ""
+            btn_label = f"{item['icon']}\n{item['label']}{badge}"
+            with col:
+                st.markdown(f'<div class="{div_class}">', unsafe_allow_html=True)
+                if st.button(btn_label, key=f"home_{item['icon']}", use_container_width=True):
+                    if coming:
+                        st.toast("🚧 준비 중입니다.")
+                    elif locked:
+                        st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
+                    elif item["page"]:
+                        st.switch_page(item["page"])
+                st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+
 # ── 메인 진입점 ───────────────────────────────────────────────────────────
 def main():
     _init_session()
@@ -348,10 +504,7 @@ def main():
         _render_landing()
     else:
         _render_sidebar()
-        # 기본 홈 콘텐츠 (페이지 이동 전 진입 시 표시)
-        st.markdown("## 🏠 홈")
-        st.info("왼쪽 사이드바에서 메뉴를 선택하세요.")
-        st.markdown(f"환영합니다, **{user.get('nickname', '회원')}** 님! 🎾")
+        _render_home(user, role)
 
 
 if __name__ == "__main__" or True:

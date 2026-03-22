@@ -46,7 +46,14 @@ st.markdown("""
 .attendee-stat { background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); color: #1a202c; padding: 5px 15px; border-radius: 8px; font-weight: 800; display: inline-block; margin-bottom: 10px; font-size: 0.9rem; }
 div.stButton > button:first-child { background-color: #FEE500 !important; color: #000000 !important; font-weight: 800 !important; border: none !important; padding: 0.25rem 0.5rem; }
 .stCheckbox { margin-bottom: 0px !important; }
-.stSelectbox { margin-top: -10px !important; }
+.member-area .stSelectbox { margin-top: -10px !important; }
+/* 매칭 컨셉 섹션: selectbox 높이를 number_input과 통일 */
+.concept-area div[data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    min-height: 38px !important;
+    height: 38px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
 h3 { margin-top: 0px !important; margin-bottom: 10px !important; font-size: 1.1rem !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -65,6 +72,9 @@ if 'global_end' not in st.session_state: st.session_state.global_end = "22:00"
 if 'fixed_partners' not in st.session_state: st.session_state.fixed_partners = [] # [[p1, p2], ...]
 if 'fixed_partner_games' not in st.session_state: st.session_state.fixed_partner_games = 1 # 고정 파트너 유지 게임 수
 if 'use_group_division' not in st.session_state: st.session_state.use_group_division = False
+if 'reward_1st' not in st.session_state: st.session_state.reward_1st = 10000
+if 'fine_25' not in st.session_state: st.session_state.fine_25 = 3000
+if 'fine_last_25' not in st.session_state: st.session_state.fine_last_25 = 5000
 
 members = get_all_members(CLUB_ID)
 members.sort(key=lambda x: x.get("nickname", ""))
@@ -267,18 +277,39 @@ with col_right:
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ── 🎾 매칭 컨셉 및 최종 설정 (복구) ──
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-card concept-area">', unsafe_allow_html=True)
     st.markdown("### 🎾 매칭 컨셉 및 최종 설정")
-    c_col1, c_col2 = st.columns(2)
-    with c_col1:
+    row1c1, row1c2 = st.columns(2)
+    with row1c1:
         concept = st.selectbox("매칭 컨셉", ["기본(랜덤)", "YB vs OB (나이)", "MBTI (E vs I)", "입상자 vs 비입상자"])
-        match_rules = st.text_input("경기 규칙", value="(모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승...)")
-        start_t = st.time_input("시작 시간", time(19, 0))
-    with c_col2:
+    with row1c2:
         match_dur = st.number_input("경기 소요 시간 (분)", 10, 120, 30)
+
+    row2c1, row2c2 = st.columns(2)
+    with row2c1:
+        start_t = st.time_input("시작 시간", time(19, 0))
+    with row2c2:
         target_matches = st.number_input("1인당 목표 경기 수", 1, 10, 4)
+
+    row3c1, row3c2 = st.columns(2)
+    with row3c1:
         a_c = st.number_input("A조 코트 수", 1, 10, 2)
+    with row3c2:
         b_c = st.number_input("B조 코트 수", 0, 10, 0)
+    
+    match_rules = st.text_input("경기 규칙", value="(모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승...)")
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # ── 💰 상벌금 설정 ──
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown("### 💰 상벌금 설정 (1등 / 하위 25% / 최하위 25%)")
+    r_col1, r_col2, r_col3 = st.columns(3)
+    with r_col1:
+        st.session_state.reward_1st = st.number_input("1등 상금", value=st.session_state.reward_1st, step=1000)
+    with r_col2:
+        st.session_state.fine_25 = st.number_input("하위 25% 벌금", value=st.session_state.fine_25, step=1000)
+    with r_col3:
+        st.session_state.fine_last_25 = st.number_input("최하위 25% 벌금", value=st.session_state.fine_last_25, step=1000)
     st.markdown('</div>', unsafe_allow_html=True)
 
     final_players = []
@@ -315,17 +346,79 @@ with col_right:
         else:
             court_map = {'A': list(range(1, a_c+1)), 'B': list(range(a_c+1, a_c+b_c+1))}
             matches = generate_kdk_matches_v3(final_players, court_map, target_matches, concept=concept, fixed_partners=st.session_state.fixed_partners, fixed_partner_games=st.session_state.fixed_partner_games)
-            st.session_state.kdk_all_data = {
-                "players": final_players,
-                "matches": matches,
-                "groups": ["A", "B"] if b_c > 0 else ["A"],
-                "start_time": start_t.strftime("%H:%M"),
-                "duration": match_dur,
-                "match_rules": match_rules,
-                "concept": concept
-            }
-            st.session_state.match_created_msg = "🚀 대진표가 성공적으로 생성되었습니다! '경기 진행' 탭에서 확인하세요."
-            st.rerun()
+            
+            # --- DB 저장 로직 추가 ---
+            from db.supabase_client import create_kdk_session, upsert_kdk_matches
+            
+            try:
+                # 1. 세션 생성
+                award_config = {
+                    "reward_1st": st.session_state.reward_1st,
+                    "fine_25": st.session_state.fine_25,
+                    "fine_last_25": st.session_state.fine_last_25
+                }
+                session_note = f"{concept} | 매칭 컨셉: {concept}"
+                user_nickname = st.session_state.get("user", {}).get("nickname", "Admin")
+                
+                new_session = create_kdk_session(
+                    club_id=CLUB_ID,
+                    session_date=datetime.now().strftime("%Y-%m-%d"),
+                    created_by=user_nickname,
+                    note=session_note,
+                    award_config=award_config
+                )
+                session_id = new_session.get("id")
+                
+                if session_id:
+                    # 2. 매치 변환 및 저장
+                    db_matches = []
+                    for m in matches:
+                        db_matches.append({
+                            "session_id": session_id,
+                            "group": m["group"],
+                            "round": m["round"],
+                            "court": m["court"],
+                            "team1": m["team1"], # JSONB로 저장됨
+                            "team2": m["team2"],
+                            "score1": 0,
+                            "score2": 0,
+                            "status": "pending"
+                        })
+                    
+                    saved_matches = upsert_kdk_matches(db_matches)
+                    
+                    # session_state 동기화 (DB ID 포함)
+                    for i, m in enumerate(matches):
+                        if i < len(saved_matches):
+                            m["id"] = saved_matches[i]["id"]
+                            m["session_id"] = session_id
+                
+                st.session_state.kdk_all_data = {
+                    "session_id": session_id if 'session_id' in locals() else None,
+                    "players": final_players,
+                    "matches": matches,
+                    "groups": ["A", "B"] if b_c > 0 else ["A"],
+                    "start_time": start_t.strftime("%H:%M"),
+                    "duration": match_dur,
+                    "match_rules": match_rules,
+                    "concept": concept,
+                    "award_config": award_config
+                }
+                st.session_state.match_created_msg = "🚀 대진표가 성공적으로 생성되어 DB에 저장되었습니다!"
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ DB 저장 중 오류가 발생했습니다: {e}")
+                # 오류 발생해도 일단 세션에는 저장 (오프라인 모드 처럼)
+                st.session_state.kdk_all_data = {
+                    "players": final_players,
+                    "matches": matches,
+                    "groups": ["A", "B"] if b_c > 0 else ["A"],
+                    "start_time": start_t.strftime("%H:%M"),
+                    "duration": match_dur,
+                    "match_rules": match_rules,
+                    "concept": concept
+                }
+                st.rerun()
 
 # ── 피드백 메시지 표시 ──────────────────────────────────────────────
 if st.session_state.get('match_created_msg'):

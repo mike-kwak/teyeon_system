@@ -15,4 +15,3 @@ requests
 
 # ── Utilities ─────────────────────────────────────────────────────────
 python-dateutil
-pyperclip         # 클립보드 복사 (카카오톡 공유용)

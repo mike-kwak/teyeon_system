@@ -180,9 +180,12 @@ def get_overall_rankings(matches, players_info):
     for i, val in enumerate(results): val["순위"] = i + 1
     return results
 
-def calculate_rewards_v2(overall_rankings):
+def calculate_rewards_v2(overall_rankings, reward_1st=10000, fine_25=3000, fine_last_25=5000):
     """
-    통합 순위 기반 상벌금 계산
+    통합 순위 기반 상벌금 계산 (커스텀 금액 반영)
+    - reward_1st: 1등 상금
+    - fine_25: 하위 25% 벌금 (3000원)
+    - fine_last_25: 최하위 25% 벌금 (5000원)
     """
     n = len(overall_rankings)
     fines = {} # {name: amount}
@@ -190,27 +193,30 @@ def calculate_rewards_v2(overall_rankings):
     
     if n == 0: return fines, reward
     
-    # 🥇 1위 상금 (보통 10,000원, 게스트 제외)
+    # 🥇 1위 상금 (게스트 제외)
     top_player = overall_rankings[0]
     if not top_player["is_guest"]:
-        reward[top_player["이름"]] = 10000
+        reward[top_player["이름"]] = reward_1st
     
-    # 💸 벌금 대상자 (하위 50%+1 올림 처리)
-    fine_count = math.ceil(n / 2) if n % 2 != 0 else n // 2
-    # 11명일 때 6명 벌금 특수 로직
-    if n == 11: fine_count = 6
+    # 💸 벌금 대상자 (하위 50%를 25% / 25%로 나눔)
+    # 전체 n에서 하위 50% (올림)
+    total_fine_count = math.ceil(n / 2)
     
-    fine_list = overall_rankings[-fine_count:]
+    # 그 중 최하위 25% (올림) -> 5000원
+    lowest_25_count = math.ceil(n * 0.25)
+    # 나머지 (하위 25%) -> 3000원
+    middle_25_count = total_fine_count - lowest_25_count
     
-    # 벌금 차등 분배 (하위 50% 중 상위 절반 3000원, 하위 절반 5000원)
-    # 7명 기준: 3명 3000원, 4명 5000원 대응 (M // 2 로직)
-    m = len(fine_list)
-    m_3k = m // 2
+    fine_list = overall_rankings[-total_fine_count:]
+    
+    # fine_list는 순위 높은 순으로 되어 있음 (ex: 6등, 7등, 8등, 9등, 10등, 11등)
+    # 하위 25% (앞쪽) -> middle_25_count 만큼 3000원
+    # 최하위 25% (뒤쪽) -> lowest_25_count 만큼 5000원
     
     for i, p in enumerate(fine_list):
-        if i < m_3k:
-            fines[p["이름"]] = 3000
+        if i < middle_25_count:
+            fines[p["이름"]] = fine_25
         else:
-            fines[p["이름"]] = 5000
+            fines[p["이름"]] = fine_last_25
             
     return fines, reward
