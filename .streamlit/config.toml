@@ -7,9 +7,10 @@ textColor       = "#FAFAFA"
 font            = "sans serif"
 
 [server]
-port            = 8501
-enableCORS      = false
-enableXsrfProtection = true
+# port는 Streamlit Cloud에서 자동 관리 (로컬 실행 시에만 필요)
+enableCORS              = false
+enableXsrfProtection    = false   # 모바일 WebSocket 연결 안정화
+enableWebsocketCompression = false # 모바일 네트워크 호환성 향상
 
 [browser]
 gatherUsageStats = false

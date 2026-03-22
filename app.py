@@ -254,7 +254,7 @@ def _render_landing():
             <div class="logo-container">
                 <img src="data:image/png;base64,{logo_b64}"
                      alt="TEYEON TENNIS"
-                     style="max-width:320px; width:90%; border-radius:20px; margin-bottom:18px;" />
+                     style="max-width:160px; width:60%; border-radius:16px; margin-bottom:18px;" />
                 <div class="since-badge">SINCE 2025</div>
             </div>
             """, unsafe_allow_html=True)
