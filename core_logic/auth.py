@@ -16,9 +16,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-KAKAO_CLIENT_ID     = os.environ.get("KAKAO_CLIENT_ID", "")
-KAKAO_CLIENT_SECRET = os.environ.get("KAKAO_CLIENT_SECRET", "")
-KAKAO_REDIRECT_URI  = os.environ.get("KAKAO_REDIRECT_URI", "http://localhost:8501")
+
+def _get_secret(key: str, default: str = "") -> str:
+    """st.secrets → os.environ 순서로 값을 읽습니다 (Streamlit Cloud & 로컬 호환)."""
+    try:
+        import streamlit as st
+        return st.secrets.get(key) or os.environ.get(key, default)
+    except Exception:
+        return os.environ.get(key, default)
+
+
+KAKAO_CLIENT_ID     = _get_secret("KAKAO_CLIENT_ID")
+KAKAO_CLIENT_SECRET = _get_secret("KAKAO_CLIENT_SECRET")
+KAKAO_REDIRECT_URI  = _get_secret("KAKAO_REDIRECT_URI", "http://localhost:8501")
 
 # ── 카카오 API 엔드포인트 ─────────────────────────────────────────────────
 _KAKAO_AUTH_BASE  = "https://kauth.kakao.com/oauth/authorize"
