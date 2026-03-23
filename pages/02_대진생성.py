@@ -14,14 +14,14 @@ st.markdown("""
 .section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
 .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
 
-/* v17.0: 궁극의 격리형 3열 그리드 (The Sledgehammer) */
-/* 에러와 깨짐을 방지하기 위해 중첩된 고특성 선택자 사용 */
+/* v18.0: 산뜻한 네이티브 토글 3열 그리드 */
+/* 3열 레이아웃은 유지하되, 복잡한 JS 연동을 제거하고 순정 기능을 강화함 */
 div.attendance-section div[data-testid="stHorizontalBlock"] {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 4px !important;
-    margin-bottom: -15px !important;
+    gap: 5px !important;
+    margin-bottom: -12px !important;
 }
 
 div.attendance-section div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
@@ -30,29 +30,29 @@ div.attendance-section div[data-testid="stHorizontalBlock"] > div[data-testid="c
     min-width: 30% !important;
 }
 
-/* 버튼 디자인: 촌스러운 노란색 완전 제거 및 세련된 네온 로즈 적용 */
+/* 선택된(primary) 버튼을 붉은색 네온으로 강조 */
+div.attendance-section button[data-testid="baseButton-primary"] {
+    background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 0 15px rgba(255, 61, 113, 0.4) !important;
+}
+
+/* 선택되지 않은(secondary) 버튼 디자인 */
+div.attendance-section button[data-testid="baseButton-secondary"] {
+    background: rgba(45, 45, 65, 0.9) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 공통 버튼 크기 및 폰트 설정 */
 div.attendance-section button {
     width: 100% !important;
     padding: 10px 1px !important;
     font-size: 0.72rem !important;
     font-weight: 700 !important;
     border-radius: 8px !important;
-    background: rgba(45, 45, 65, 0.95) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #cbd5e1 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
 }
-
-/* 선택된 버튼 스타일 (Neon Orange-Red) */
-div.attendance-section button[data-member-active="true"] {
-    background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
-    color: #fff !important;
-    border-color: #ff3d71 !important;
-    box-shadow: 0 0 12px rgba(255, 61, 113, 0.5) !important;
-}
-</style>
 </style>
 """, unsafe_allow_html=True)
 
@@ -113,7 +113,6 @@ with col_left:
     
     st.markdown('<div class="attendance-section">', unsafe_allow_html=True)
     
-    active_names = []
     for i in range(0, len(filtered), 3):
         cols = st.columns(3)
         for j in range(3):
@@ -126,12 +125,10 @@ with col_left:
                 if st.session_state.use_group_division:
                     display_text += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
                 
-                if is_active: active_names.append(display_text)
-                
                 with cols[j]:
-                    # 네이티브 버튼으로 100% 선택 안정성 확보
-                    # v17.0: 루프 내부에 어떠한 JS나 마크다운도 넣지 않음 (레이아웃 보호)
-                    if st.button(display_text, key=f"v17_{m_id}", use_container_width=True):
+                    # v18.0: 사용자 요청에 따른 심플 토글 로직 (st.session_state + type 활용)
+                    b_type = "primary" if is_active else "secondary"
+                    if st.button(display_text, key=f"v18_{m_id}", use_container_width=True, type=b_type):
                         if is_active:
                             st.session_state.selected_members.remove(m_id)
                             st.session_state.player_times.pop(m_name, None)
@@ -144,18 +141,7 @@ with col_left:
                             st.session_state.player_groups[m_name] = "A"
                         st.rerun()
 
-    # v17.0: 선택된 버튼 리스트를 한꺼번에 JS로 전달하여 일괄 마킹 (루카스 밖에서 실행)
-    if active_names:
-        js_list = '["' + '","'.join(active_names) + '"]'
-        st.markdown(f"""<script>
-            var activeNames = {js_list};
-            window.parent.document.querySelectorAll('button').forEach(b => {{
-                if(activeNames.includes(b.innerText.trim())) b.setAttribute('data-member-active', 'true');
-                else b.removeAttribute('data-member-active');
-            }});
-        </script>""", unsafe_allow_html=True)
-
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v17"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v18"):
         st.session_state.selected_members = []
         st.session_state.player_times = {}
         st.session_state.player_groups = {}
