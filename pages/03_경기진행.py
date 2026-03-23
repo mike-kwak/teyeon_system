@@ -260,34 +260,34 @@ with main_tabs[1]:
                     "정산액": f"{amt:,}원", "비고": note
                 })
 
-            # HTML 테이블로 가운데 정렬 구현
-            html_table = f"""
-            <style>
-                .ranking-table {{ width: 100%; border-collapse: collapse; margin-top: 10px; color: white; text-align: center; }}
-                .ranking-table th {{ background: rgba(204, 255, 0, 0.1); color: #CCFF00; padding: 12px; border-bottom: 2px solid rgba(254, 255, 0, 0.2); font-size: 0.9rem; }}
-                .ranking-table td {{ padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.85rem; }}
-                .ranking-table tr:nth-child(even) {{ background: rgba(255, 255, 255, 0.02); }}
-                .reward-tag {{ color: #CCFF00; font-weight: bold; }}
-                .penalty-tag {{ color: #ff4b4b; font-weight: bold; }}
-            </style>
-            <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>순위</th><th>이름</th><th>승</th><th>패</th><th>득실차</th><th>경기수</th><th>정산액</th><th>비고</th>
-                    </tr>
-                </thead>
-                <tbody>
-            """
-            for r in res_data:
-                note_class = "reward-tag" if "상금" in r["비고"] else "penalty-tag" if "벌금" in r["비고"] else ""
-                html_table += f"""
-                    <tr>
-                        <td>{r['순위']}</td><td>{r['이름']}</td><td>{r['승']}</td><td>{r['패']}</td><td>{r['득실차']}</td><td>{r['경기수']}</td>
-                        <td>{r['정산액']}</td><td class="{note_class}">{r['비고']}</td>
-                    </tr>
-                """
-            html_table += "</tbody></table>"
-            st.markdown(html_table, unsafe_allow_html=True)
+# HTML 테이블로 가운데 정렬 구현 (들여쓰기 제거 필수)
+html_table = f"""
+<style>
+.ranking-table {{ width: 100%; border-collapse: collapse; margin-top: 10px; color: white; text-align: center; }}
+.ranking-table th {{ background: rgba(204, 255, 0, 0.1); color: #CCFF00; padding: 12px; border-bottom: 2px solid rgba(254, 255, 0, 0.2); font-size: 0.9rem; }}
+.ranking-table td {{ padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.85rem; }}
+.ranking-table tr:nth-child(even) {{ background: rgba(255, 255, 255, 0.02); }}
+.reward-tag {{ color: #CCFF00; font-weight: bold; }}
+.penalty-tag {{ color: #ff4b4b; font-weight: bold; }}
+</style>
+<table class="ranking-table">
+<thead>
+<tr>
+<th>순위</th><th>이름</th><th>승</th><th>패</th><th>득실차</th><th>경기수</th><th>정산액</th><th>비고</th>
+</tr>
+</thead>
+<tbody>
+"""
+for r in res_data:
+    note_class = "reward-tag" if "상금" in r["비고"] else "penalty-tag" if "벌금" in r["비고"] else ""
+    html_table += f"""
+<tr>
+<td>{r['순위']}</td><td>{r['이름']}</td><td>{r['승']}</td><td>{r['패']}</td><td>{r['득실차']}</td><td>{r['경기수']}</td>
+<td>{r['정산액']}</td><td class="{note_class}">{r['비고']}</td>
+</tr>
+"""
+html_table += "</tbody></table>"
+st.markdown(html_table, unsafe_allow_html=True)
             
             # 진행 상태 표시
             completed_matches = sum(1 for m in matches if m["status"] == "complete")
