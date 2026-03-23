@@ -539,9 +539,10 @@ def check_auth_and_log(page_name: str):
             cookie_manager.delete("teyeon_auth")
             st.session_state.clear()
             st.toast("👋 로그아웃 되었습니다.")
-            import time
-            time.sleep(0.5) # 쿠키 삭제 반영 대기
-            st.rerun()
+            
+            # 쿠키 삭제 명령이 도달할 시간을 주고 강제 홈으로 이동
+            import streamlit.components.v1 as components
+            components.html("<script>setTimeout(function(){window.parent.location.href='/';}, 600);</script>", height=0)
     
     # 권한 체크
     allowed_pages = get_menu_permissions(role)

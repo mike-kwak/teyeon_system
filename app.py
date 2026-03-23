@@ -225,7 +225,11 @@ def _handle_oauth_callback(cookie_manager):
     with st.spinner("카카오 로그인 처리 중..."):
         token_data = exchange_code_for_token(code)
         if not token_data.get("access_token"):
-            st.error(f"카카오 로그인에 실패했습니다. 상세: {token_data.get('error', '알 수 없거나 응답 없음')}")
+            if "KOE320" in str(token_data) or token_data.get("error_code") == "KOE320":
+                # 이미 사용된 인가코드 (새로고침/뒤로가기 시 발생). 조용히 URL 비우고 리런
+                st.query_params.clear()
+                st.rerun()
+            st.error(f"카카오 로그인에 실패했습니다. 상세: {token_data}")
             st.query_params.clear()
             return
 
@@ -269,12 +273,9 @@ def _handle_oauth_callback(cookie_manager):
             "role": st.session_state["role"]
         }, expires_at=datetime.now() + timedelta(days=30))
 
-        # URL 정리 & Rerun 보류 (쿠키 세팅을 위해 자연스럽게 렌더링되도록 함)
+        # URL 정리 & Rerun 방지 (쿠키 컴포넌트가 무사히 프론트엔드에 렌더링되게 놔둠)
         st.query_params.clear()
         st.toast("✅ 로그인 성공! 자동 로그인 쿠키가 저장되었습니다.")
-        import time
-        time.sleep(0.5) # 쿠키 반영을 위한 짧은 대기
-        st.rerun()
 
 
 # ── 랜딩 페이지 (비로그인) ────────────────────────────────────────────────
@@ -395,9 +396,10 @@ def _render_sidebar(cookie_manager):
             cookie_manager.delete("teyeon_auth")
             st.query_params.clear()
             st.toast("👋 로그아웃 되었습니다.")
-            import time
-            time.sleep(0.5) # 쿠키 삭제 반영 대기
-            st.rerun()
+            
+            # 쿠키 삭제 명령이 브라우저에 도달할 시간을 주고 새로고침
+            import streamlit.components.v1 as components
+            components.html("<script>setTimeout(function(){window.parent.location.reload();}, 600);</script>", height=0)
 
 
 # ── Action Tower 홈 렌더링 ──────────────────────────────────────────────────
