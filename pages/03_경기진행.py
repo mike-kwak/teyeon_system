@@ -172,6 +172,7 @@ with main_tabs[0]:
             ''', unsafe_allow_html=True)
         
             c_p2, c_m2 = st.columns(2)
+            with c_p2: st.button("➕", key="s2p", on_click=change_s, args=(2, 1), use_container_width=True)
             with c_m2: st.button("➖", key="s2m", on_click=change_s, args=(2,-1), use_container_width=True)
     
         # v7.4 햅틱 피드백 (강력한 주입 시도)
