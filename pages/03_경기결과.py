@@ -89,6 +89,18 @@ st.subheader("🏆 최종 순위 및 정산")
 status_color = "#CCFF00" if session_data["status"] == "completed" else "#ff4b4b"
 st.markdown(f"상태: <span style='color:{status_color}; font-weight:bold;'>{session_data['status'].upper()}</span>", unsafe_allow_html=True)
 
+res_data = []
+for r in overall_rank:
+    name = r["이름"]
+    amt = rewards.get(name, 0) - fines.get(name, 0)
+    note = ""
+    if name in rewards: note = f"👑 1등 상금 (+{rewards[name]:,})"
+    elif name in fines: note = f"❗ 벌금 (-{fines[name]:,})"
+    res_data.append({
+        "순위": r["순위"], "이름": name, "승": r["승"], "패": r["패"], 
+        "득실차": r["득실차"], "경기수": r["경기수"], "정산액": f"{amt:,}원", "비고": note
+    })
+
 # HTML 테이블로 가운데 정렬 구현
 html_table = f"""
 <style>
