@@ -163,40 +163,45 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
 }
 
-/* ── v3.0 무적의 HTML 그리드 스타일 ── */
-.at-html-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 12px !important;
-    margin-bottom: 25px;
-    width: 100%;
+/* ── v3.5 무적의 Inline-Block 그리드 스타일 ── */
+#at-grid-start ~ div.element-container:has(div.stButton) {
+    display: inline-block !important;
+    width: 31% !important;
+    margin: 1% !important;
+    vertical-align: top !important;
 }
-.at-tile {
+#at-grid-end ~ div.element-container {
+    display: block !important;
+}
+
+/* 버튼 내부 디자인 고도화 */
+.stButton > button {
+    aspect-ratio: 1 / 1.05 !important;
     background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
     border: 1px solid rgba(254,255,0,0.15) !important;
     border-radius: 22px !important;
-    padding: 18px 5px !important;
-    text-decoration: none !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    aspect-ratio: 1 / 1.05 !important;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    color: #ffffff !important;
+    font-size: 0.8rem !important;
+    font-weight: 800 !important;
+    padding: 10px 5px !important;
+    white-space: pre-wrap !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
-.at-tile:hover {
-    transform: translateY(-5px) scale(1.02);
+.stButton > button:hover {
+    transform: translateY(-5px) scale(1.02) !important;
     border-color: #CCFF00 !important;
     box-shadow: 0 10px 25px rgba(204,255,0,0.25) !important;
 }
-.at-tile-icon { font-size: 2.8rem; margin-bottom: 8px; line-height: 1; }
-.at-tile-label {
-    font-size: 0.8rem; font-weight: 800; color: #ffffff !important;
-    text-align: center; line-height: 1.2; font-family: 'Montserrat', sans-serif;
+
+/* 텍스트 줄바꿈 및 아이콘 크기 조절 */
+.stButton > button p {
+    margin: 0 !important;
+    line-height: 1.2 !important;
 }
-.at-tile-badge { font-size: 0.65rem; vertical-align: middle; opacity: 0.8; }
-.at-tile-locked, .at-tile-coming { opacity: 0.45; filter: grayscale(0.6); cursor: default; pointer-events: none; }
+.stButton > button p::first-line {
+    font-size: 2.4rem !important;
+    line-height: 1 !important;
+}
 
 /* ── Action Tower Profile Card (Dark Premium) ── */
 .at-profile-card {
@@ -501,7 +506,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.2</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.5</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
@@ -510,29 +515,34 @@ def _render_home(user: dict, role: str):
 <div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">\u26a1 \ube60\ub978 \uc774\ub3d9</div>
 """, unsafe_allow_html=True)
 
-    # ── v3.0 무적의 HTML 아이콘 그리드 (st.columns 미사용) ──
-    grid_html = '<div class="at-html-grid">'
+    # ── v3.5 무적의 Inline-Block 아이콘 그리드 (st.columns 미사용) ──
+    st.markdown('<div id="at-grid-start"></div>', unsafe_allow_html=True)
+    
     for item in HOME_MENU:
         locked = not can_access(item["min_role"])
         coming = item["coming_soon"]
         
         if coming:
-            state_class = "at-tile-coming"
-            url = "#"
-            badge = "🚧"
+            div_class = "at-btn-coming"
+            badge = " 🚧"
         elif locked:
-            state_class = "at-tile-locked"
-            url = "#"
-            badge = "🔒"
+            div_class = "at-btn-locked"
+            badge = " 🔒"
         else:
-            state_class = "at-tile-active"
-            url = f"/?nav={item['id']}"
+            div_class = "at-btn-active"
             badge = ""
 
-        grid_html += f"""<a href="{url}" class="at-tile {state_class}" target="_self"><div class="at-tile-icon">{item['icon']}</div><div class="at-tile-label">{item['label']} <span class="at-tile-badge">{badge}</span></div></a>"""
-    grid_html += '</div>'
-    
-    st.markdown(grid_html, unsafe_allow_html=True)
+        btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
+        
+        if st.button(btn_label, key=f"at_btn_{item['id']}", use_container_width=True):
+            if coming:
+                st.toast("🚧 준비 중입니다.")
+            elif locked:
+                st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
+            elif item["page"]:
+                st.switch_page(item["page"])
+                
+    st.markdown('<div id="at-grid-end"></div>', unsafe_allow_html=True)
     st.markdown("---")
 
 
