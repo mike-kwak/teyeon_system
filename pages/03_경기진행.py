@@ -24,9 +24,10 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
     flex: 1 !important;
 }
 .match-card {
-    background: white; border-radius: 15px; padding: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px;
-    border: 1px solid #eee;
+    background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
 }
 .score-display {
     background: #1a1a2e; color: #CCFF00; font-size: 2.2rem; font-weight: 900;
@@ -36,11 +37,11 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
     background: #f1f3f5; color: #495057; font-weight: 800; font-size: 0.95rem;
     padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; text-align: center;
 }
-.status-draft { background: #fff4e6; color: #d9480f; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; }
-.status-confirmed { background: #e7f5ff; color: #1971c2; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; }
+.status-draft { background: rgba(255, 244, 230, 0.1); color: #ffa94d; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; border: 1px solid #ffa94d; }
+.status-confirmed { background: rgba(231, 245, 255, 0.1); color: #74c0fc; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; border: 1px solid #74c0fc; }
 .rules-box {
     background: rgba(204, 255, 0, 0.05); border: 1px dashed #CCFF00;
-    padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem;
+    padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem; color: #ffffff;
 }
 /* KDK 스코어 카드 스타일링 */
 div[data-testid="column"]:has(.team-card-wrapper) {
@@ -109,90 +110,93 @@ st.markdown(f'<div class="rules-box"><b>📏 경기 규칙:</b> {rules}</div>', 
 if status == "draft" and s_id:
     if st.button("✅ 현재 대진표 최종 확정하기", use_container_width=True, type="primary"):
         update_kdk_session_status(s_id, "confirmed")
-        st.success("🎉 대진표가 최종 확정되었습니다!"); st.rerun()
+        st.toast("🎉 대진표가 최종 확정되었습니다!")
+        st.rerun()
 
-# ── 뷰 전환 ──
-view_tabs = st.tabs(["📊 대진표", "🔢 점수 입력", "🏆 순위"])
+# ── 뷰 전환: 점수 입력 모드 vs 리스트 모드 ──
+if 'editing_match_idx' in st.session_state:
+    # 점수 입력 모드
+    idx = st.session_state.editing_match_idx
+    m = matches[idx]
+    
+    if st.button("← 대진표 목록으로 돌아가기", use_container_width=True):
+        del st.session_state.editing_match_idx
+        st.rerun()
 
-# 1. 대진표 뷰
-with view_tabs[0]:
+    st.markdown(f"### 🔢 경기 결과 입력 (코트 {m['court']} / 라운드 {m['round']})")
+    
+    if 's1_val' not in st.session_state or st.session_state.get('last_idx') != idx:
+        st.session_state.s1_val = m['score1']
+        st.session_state.s2_val = m['score2']
+        st.session_state.last_idx = idx
+
+    def change_s(side, delta):
+        if side == 1: st.session_state.s1_val = max(0, st.session_state.s1_val + delta)
+        else: st.session_state.s2_val = max(0, st.session_state.s2_val + delta)
+
+    # ── 가로형 점수 카드 레이아웃 ──
+    score_col1, vs_col, score_col2 = st.columns([1, 0.2, 1])
+    
+    with score_col1:
+        st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
+        # 프로필 아이콘과 이름
+        names_html1 = "<br>".join(m["team1"])
+        st.markdown(f'''
+        <div class="kdk-score-name">
+            <div style="font-size:2rem;margin-bottom:5px;">👤</div>
+            {names_html1}
+        </div>
+        ''', unsafe_allow_html=True)
+        st.markdown(f'<div class="kdk-score-number">{st.session_state.s1_val}</div>', unsafe_allow_html=True)
+        
+        c_p1, c_m1 = st.columns(2)
+        with c_p1: st.button("➕", key="s1p", on_click=change_s, args=(1, 1), use_container_width=True)
+        with c_m1: st.button("➖", key="s1m", on_click=change_s, args=(1,-1), use_container_width=True)
+
+    with vs_col:
+        st.markdown('<div class="kdk-vs-text">VS</div>', unsafe_allow_html=True)
+
+    with score_col2:
+        st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
+        names_html2 = "<br>".join(m["team2"])
+        st.markdown(f'''
+        <div class="kdk-score-name">
+            <div style="font-size:2rem;margin-bottom:5px;">🔴</div>
+            {names_html2}
+        </div>
+        ''', unsafe_allow_html=True)
+        st.markdown(f'<div class="kdk-score-number">{st.session_state.s2_val}</div>', unsafe_allow_html=True)
+        
+        c_p2, c_m2 = st.columns(2)
+        with c_p2: st.button("➕", key="s2p", on_click=change_s, args=(2, 1), use_container_width=True)
+        with c_m2: st.button("➖", key="s2m", on_click=change_s, args=(2,-1), use_container_width=True)
+    
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    if st.button("💾 점수 저장 및 복귀", type="primary", use_container_width=True):
+        m['score1'], m['score2'], m['status'] = st.session_state.s1_val, st.session_state.s2_val, "complete"
+        if m.get('id'): update_kdk_match_score(m['id'], m['score1'], m['score2'], "complete")
+        st.success("저장 완료!")
+        del st.session_state.editing_match_idx
+        st.rerun()
+
+else:
+    # ── 대진표 리스트 모드 ──
     for m in matches:
         idx = matches.index(m)
         score_text = f"{m['score1']} : {m['score2']}" if m["status"] == "complete" else "VS"
         st.markdown(f"""
         <div class="match-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="flex:1; text-align:left; font-weight:800;">{' & '.join(m['team1'])}</div>
-                <div style="flex:0.5; text-align:center; font-weight:900; font-size:1.2rem;">{score_text}</div>
-                <div style="flex:1; text-align:right; font-weight:800;">{' & '.join(m['team2'])}</div>
+                <div style="flex:1; text-align:left; font-weight:800; font-size:1.1rem;">{' & '.join(m['team1'])}</div>
+                <div style="flex:0.5; text-align:center; font-weight:900; font-size:1.2rem; color:#CCFF00;">{score_text}</div>
+                <div style="flex:1; text-align:right; font-weight:800; font-size:1.1rem;">{' & '.join(m['team2'])}</div>
             </div>
-            <div style="font-size:0.7rem; color:#888; text-align:center; margin-top:5px;">코트 {m['court']} | 라운드 {m['round']}</div>
+            <div style="font-size:0.8rem; color:#aab8d4; text-align:center; margin-top:8px;">코트 {m['court']} | 라운드 {m['round']}</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button(f"점수 입력 (코트 {m['court']}/R{m['round']})", key=f"btn_{idx}", use_container_width=True):
+        if st.button(f"점수 입력 (코트 {m['court']} / R{m['round']})", key=f"btn_{idx}", use_container_width=True):
             st.session_state.editing_match_idx = idx
             st.rerun()
-
-# 2. 점수 입력 뷰
-with view_tabs[1]:
-    if 'editing_match_idx' not in st.session_state:
-        st.info("대진표에서 '점수 입력' 버튼을 눌러주세요.")
-    else:
-        idx = st.session_state.editing_match_idx
-        m = matches[idx]
-        st.markdown(f"### 🔢 경기 결과 입력 (코트 {m['court']})")
-        
-        if 's1_val' not in st.session_state or st.session_state.get('last_idx') != idx:
-            st.session_state.s1_val = m['score1']
-            st.session_state.s2_val = m['score2']
-            st.session_state.last_idx = idx
-
-        def change_s(side, delta):
-            if side == 1: st.session_state.s1_val = max(0, st.session_state.s1_val + delta)
-            else: st.session_state.s2_val = max(0, st.session_state.s2_val + delta)
-
-        # ── 가로형 점수 카드 레이아웃 ──
-        score_col1, vs_col, score_col2 = st.columns([1, 0.2, 1])
-        
-        with score_col1:
-            st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
-            # 프로필 아이콘과 이름
-            names_html1 = "<br>".join(m["team1"])
-            st.markdown(f'''
-            <div class="kdk-score-name">
-                <div style="font-size:2rem;margin-bottom:5px;">👤</div>
-                {names_html1}
-            </div>
-            ''', unsafe_allow_html=True)
-            st.markdown(f'<div class="kdk-score-number">{st.session_state.s1_val}</div>', unsafe_allow_html=True)
-            
-            c_p1, c_m1 = st.columns(2)
-            with c_p1: st.button("➕", key="s1p", on_click=change_s, args=(1, 1), use_container_width=True)
-            with c_m1: st.button("➖", key="s1m", on_click=change_s, args=(1,-1), use_container_width=True)
-
-        with vs_col:
-            st.markdown('<div class="kdk-vs-text">VS</div>', unsafe_allow_html=True)
-
-        with score_col2:
-            st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
-            names_html2 = "<br>".join(m["team2"])
-            st.markdown(f'''
-            <div class="kdk-score-name">
-                <div style="font-size:2rem;margin-bottom:5px;">🔴</div>
-                {names_html2}
-            </div>
-            ''', unsafe_allow_html=True)
-            st.markdown(f'<div class="kdk-score-number">{st.session_state.s2_val}</div>', unsafe_allow_html=True)
-            
-            c_p2, c_m2 = st.columns(2)
-            with c_p2: st.button("➕", key="s2p", on_click=change_s, args=(2, 1), use_container_width=True)
-            with c_m2: st.button("➖", key="s2m", on_click=change_s, args=(2,-1), use_container_width=True)
-        
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        if st.button("💾 점수 저장 및 복귀", type="primary", use_container_width=True):
-            m['score1'], m['score2'], m['status'] = st.session_state.s1_val, st.session_state.s2_val, "complete"
-            if m.get('id'): update_kdk_match_score(m['id'], m['score1'], m['score2'], "complete")
-            st.success("저장 완료!"); del st.session_state.editing_match_idx; st.rerun()
 
 # 3. 순위 (간소화)
 with view_tabs[2]:
