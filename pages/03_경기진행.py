@@ -14,83 +14,37 @@ check_auth_and_log("03_경기진행.py")
 # CSS: 가로형 스텝퍼 강제 및 UI 개선
 st.markdown("""
 <style>
-div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 10px !important;
+/* v7.0 Nuclear CSS: 모바일 강제 가로 50/50 레이아웃 (점수 입력 전용) */
+@media (max-width: 768px) {
+    div[data-testid="stHorizontalBlock"]:has(.score-card-container) {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.score-card-container) > div {
+        flex: 1 1 50% !important;
+        width: 50% !important;
+        min-width: 0 !important;
+    }
+    .kdk-score-number {
+        font-size: 3.8rem !important; /* 모바일 대응 크기 조절 */
+    }
 }
-div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="column"] {
-    width: auto !important;
-    flex: 1 !important;
+
+.score-card-container {
+    background: linear-gradient(145deg, rgba(26,37,61,0.95), rgba(10,14,26,1));
+    border: 1px solid rgba(204,255,0,0.3);
+    border-radius: 28px;
+    padding: 20px 10px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
-.match-card {
-    background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-}
-.score-display {
-    background: #1a1a2e; color: #CCFF00; font-size: 2.2rem; font-weight: 900;
-    text-align: center; border-radius: 12px; padding: 10px 0; line-height: 1;
-}
-.team-name-badge {
-    background: #f1f3f5; color: #495057; font-weight: 800; font-size: 0.95rem;
-    padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; text-align: center;
-}
-.status-draft { background: rgba(255, 244, 230, 0.1); color: #ffa94d; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; border: 1px solid #ffa94d; }
-.status-confirmed { background: rgba(231, 245, 255, 0.1); color: #74c0fc; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; border: 1px solid #74c0fc; }
-.rules-box {
-    background: rgba(204, 255, 0, 0.05); border: 1px dashed #CCFF00;
-    padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem; color: #ffffff;
-}
-/* KDK 스코어 카드 스타일링 */
-div[data-testid="column"]:has(.team-card-wrapper) {
-    background: linear-gradient(135deg, rgba(26,37,61,0.9), rgba(10,14,26,0.95)) !important;
-    border: 1px solid rgba(204,255,0,0.3) !important;
-    border-radius: 24px !important;
-    padding: 20px 10px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-}
-.kdk-score-name {
-    font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.4;
-    text-align: center; margin-bottom: 15px; min-height: 2.8em;
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-}
-.kdk-score-number {
-    font-size: 5.5rem; font-weight: 900; color: #CCFF00; line-height: 1;
-    text-align: center; font-family: 'Outfit', sans-serif;
-    text-shadow: 0 0 30px rgba(204,255,0,0.6); margin-bottom: 20px;
-}
-.kdk-score-number-bg {
-    background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px 0;
-    margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);
-}
-.kdk-vs-text {
-    font-size: 1.8rem; font-weight: 900; color: #aab8d4;
-    font-style: italic; opacity: 0.6; text-align: center;
-    margin-top: 50%;
-}
-/* +/- 버튼 약간 크게 */
-div[data-testid="column"]:has(.team-card-wrapper) div.stButton > button {
-    border-radius: 14px !important;
-    font-size: 1.5rem !important;
-    padding: 10px 0 !important;
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    transition: all 0.2s;
-}
-div[data-testid="column"]:has(.team-card-wrapper) div.stButton > button:active {
-    background: rgba(204,255,0,0.2) !important;
-    border-color: #CCFF00 !important;
-}
-.inline-profile {
-    display: flex; align-items: center; gap: 6px;
-}
-.inline-profile-list {
-    display: flex; flex-direction: column; gap: 4px;
+.vs-divider-premium {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    font-family: 'Oswald', sans-serif; font-weight: 900; color: #aab8d4;
+    font-size: 1.4rem; font-style: italic; opacity: 0.5;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -149,22 +103,20 @@ with main_tabs[0]:
             if side == 1: st.session_state.s1_val = max(0, st.session_state.s1_val + delta)
             else: st.session_state.s2_val = max(0, st.session_state.s2_val + delta)
 
-        # ── 가로형 점수 카드 레이아웃 ──
+        # ── 가로형 프리미엄 점수 카드 (v7.0) ──
         score_col1, vs_col, score_col2 = st.columns([1, 0.2, 1])
     
         with score_col1:
-            st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
-            # 프로필 아이콘과 이름 (v6.0)
-            p_htmls = [f'<div class="inline-profile">{get_member_photo_html(name, size=24, border=False)} <span>{name}</span></div>' for name in m["team1"]]
+            st.markdown('<div class="score-card-container">', unsafe_allow_html=True)
+            p_htmls = [f'<div class="inline-profile" style="justify-content:center; margin-bottom:6px;">{get_member_photo_html(name, size=32, border=True)}</div><div style="font-size:0.9rem; font-weight:800; color:#fff;">{name}</div>' for name in m["team1"]]
             names_html1 = "".join(p_htmls)
             
             st.markdown(f'''
-            <div class="kdk-score-name">
-                <div class="inline-profile-list">{names_html1}</div>
-            </div>
-            <div class="kdk-score-number-bg">
-                <div class="kdk-score-number">{st.session_state.s1_val}</div>
-            </div>
+                <div style="margin-bottom:15px;">{names_html1}</div>
+                <div class="kdk-score-number-bg">
+                    <div class="kdk-score-number">{st.session_state.s1_val}</div>
+                </div>
+                </div>
             ''', unsafe_allow_html=True)
         
             c_p1, c_m1 = st.columns(2)
@@ -172,20 +124,19 @@ with main_tabs[0]:
             with c_m1: st.button("➖", key="s1m", on_click=change_s, args=(1,-1), use_container_width=True)
 
         with vs_col:
-            st.markdown('<div class="kdk-vs-text">VS</div>', unsafe_allow_html=True)
+            st.markdown('<div class="vs-divider-premium">VS</div>', unsafe_allow_html=True)
 
         with score_col2:
-            st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
-            p_htmls = [f'<div class="inline-profile">{get_member_photo_html(name, size=24, border=False)} <span>{name}</span></div>' for name in m["team2"]]
+            st.markdown('<div class="score-card-container">', unsafe_allow_html=True)
+            p_htmls = [f'<div class="inline-profile" style="justify-content:center; margin-bottom:6px;">{get_member_photo_html(name, size=32, border=True)}</div><div style="font-size:0.9rem; font-weight:800; color:#fff;">{name}</div>' for name in m["team2"]]
             names_html2 = "".join(p_htmls)
             
             st.markdown(f'''
-            <div class="kdk-score-name">
-                <div class="inline-profile-list">{names_html2}</div>
-            </div>
-            <div class="kdk-score-number-bg">
-                <div class="kdk-score-number">{st.session_state.s2_val}</div>
-            </div>
+                <div style="margin-bottom:15px;">{names_html2}</div>
+                <div class="kdk-score-number-bg">
+                    <div class="kdk-score-number">{st.session_state.s2_val}</div>
+                </div>
+                </div>
             ''', unsafe_allow_html=True)
         
             c_p2, c_m2 = st.columns(2)
