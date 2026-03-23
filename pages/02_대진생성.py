@@ -122,25 +122,28 @@ with col_left:
             st.session_state.selected_members, st.session_state.guests, st.session_state.player_times, st.session_state.player_groups, st.session_state.fixed_partners = [], [], {}, {}, []
             st.rerun()
 
-    # ── v9.0: 클릭 감지 및 상태 업데이트 (URL Query Param 사용) ──
-    # Streamlit Cloud에서는 URL 억제 정책이 있을 수 있으므로 session_state를 먼저 확인
-    if "toggle_id" in st.query_params:
-        toggle_id = st.query_params["toggle_id"]
-        # members 리스트에서 해당 id 찾기
-        target_m = next((m for m in members if str(m["id"]) == toggle_id), None)
-        if target_m:
-            m_id, m_name = target_m["id"], target_m.get("nickname", "")
-            if m_id in st.session_state.selected_members:
-                st.session_state.selected_members.remove(m_id)
-                st.session_state.player_times.pop(m_name, None)
-                st.session_state.player_groups.pop(m_name, None)
-            else:
-                st.session_state.selected_members.append(m_id)
-                st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
-                st.session_state.player_groups[m_name] = "A"
-        # 쿼리 파라미터 비우고 리런
-        st.query_params.clear()
-        st.rerun()
+    # ── v9.1: 더 안전한 클릭 감지 및 상태 업데이트 ──
+    try:
+        if "toggle_id" in st.query_params:
+            toggle_id = st.query_params.get("toggle_id")
+            # members 리스트에서 해당 id 찾기 (데이터 타입 유연하게 처리)
+            target_m = next((m for m in members if str(m.get("id")) == str(toggle_id)), None)
+            if target_m:
+                m_id, m_name = target_m["id"], target_m.get("nickname", "")
+                if m_id in st.session_state.selected_members:
+                    st.session_state.selected_members.remove(m_id)
+                    st.session_state.player_times.pop(m_name, None)
+                    st.session_state.player_groups.pop(m_name, None)
+                else:
+                    st.session_state.selected_members.append(m_id)
+                    st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
+                    st.session_state.player_groups[m_name] = "A"
+            
+            # 파라미터 개별 삭제가 더 안전함
+            for k in list(st.query_params.keys()): del st.query_params[k]
+            st.rerun()
+    except Exception as e:
+        st.error(f"선택 처리 중 오류 발생: {e}")
 
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
