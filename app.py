@@ -603,10 +603,10 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
 
 
 # ── 메인 진입점 ───────────────────────────────────────────────────────────
-from core_logic.auth import get_manager
+import extra_streamlit_components as stx
 
 def main():
-    cookie_manager = get_manager()
+    cookie_manager = stx.CookieManager(key="app_cookie_manager")
     _init_session(cookie_manager)
     _handle_oauth_callback(cookie_manager)
 
