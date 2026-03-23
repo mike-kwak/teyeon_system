@@ -147,46 +147,80 @@ html, body, [class*="css"] {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* ── Action Tower 전용 (White Card Style) ── */
+/* ── Action Tower 전용 (Dark Premium Style - Reverted from White) ── */
 .at-profile-card {
     display: flex; align-items: center; justify-content: space-between;
-    background: #FFFFFF !important;
+    background: linear-gradient(135deg, rgba(26,37,61,0.95), rgba(10,14,26,0.98)) !important;
+    border: 1px solid rgba(204,255,0,0.3) !important;
     border-radius: 24px !important;
-    padding: 20px 22px !important;
+    padding: 18px 20px !important;
     margin-bottom: 25px !important;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
-    border: none !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4) !important;
 }
 .at-profile-info { display: flex; align-items: center; gap: 16px; }
 .at-avatar {
-    width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+    width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
     border: 2px solid #CCFF00;
 }
 .at-avatar-init {
-    width: 60px; height: 60px; border-radius: 50%;
-    background: #f1f3f5;
+    width: 54px; height: 54px; border-radius: 50%;
+    background: linear-gradient(135deg,#1a253d,#CCFF00 200%);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 22px; color: #343a40;
+    font-weight: 900; font-size: 20px; color: #0A0E1A;
+    border: 2px solid #CCFF00;
 }
 .at-name {
-    font-family: 'Montserrat', sans-serif; font-weight: 800;
-    font-size: 1.2rem; color: #1a1a1a !important; line-height: 1.2;
+    font-family: 'Outfit',sans-serif; font-weight: 900;
+    font-size: 1.15rem; color: #fff !important; line-height: 1.2;
 }
 .at-badge {
-    display: inline-block; font-size: 0.75rem; font-weight: 700;
-    padding: 3px 12px; border-radius: 30px; margin-top: 6px;
-    background: #f8f9fa; color: #1a1a1a; border: 1px solid #dee2e6;
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    padding: 2px 10px; border-radius: 30px; margin-top: 4px; border: 1px solid;
+    background: rgba(255,255,255,0.05); color: #CCFF00; border-color: rgba(204,255,0,0.3);
 }
 .at-ceo-btn {
-    background: #1a1a1a !important;
-    color: #FFFFFF !important; font-weight: 800 !important;
-    font-size: 0.85rem !important; border: none !important;
-    border-radius: 16px !important; padding: 12px 18px !important;
+    background: linear-gradient(135deg,#CCFF00,#a8d400) !important;
+    color: #0A0E1A !important; font-weight: 900 !important;
+    font-size: 0.78rem !important; border: none !important;
+    border-radius: 14px !important; padding: 10px 16px !important;
     cursor: pointer; white-space: nowrap; text-decoration: none;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(204,255,0,0.35);
 }
-.at-ceo-btn:hover {
-    background: #CCFF00 !important; color: #000 !important;
+
+/* ── 완벽 반응형(Responsive Fluid) 그리드: 3열 강제 ── */
+div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+}
+
+/* 모바일에서도 3열 유지: flex-basis를 33.333% 근처로 설정 */
+div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) > div[data-testid="column"] {
+    flex: 1 1 calc(33.333% - 8px) !important; 
+    min-width: 90px !important; /* 글자가 깨지지 않는 최소 너비 */
+    width: auto !important;
+}
+
+/* 타일 스타일 (Desired UI 이미지 2와 유사하게) */
+.icon-btn > div.stButton > button {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 20px !important;
+    background: linear-gradient(145deg, rgba(35,45,70,0.9), rgba(20,28,48,0.95)) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    color: #ffffff !important;
+    font-size: 0.8rem !important; font-weight: 800 !important;
+    display: flex !important; flex-direction: column !important;
+    align-items: center !important; justify-content: center !important;
+    padding: 10px !important;
+}
+.icon-btn > div.stButton > button p {
+    margin: 0 !important; line-height: 1.2 !important;
+}
+.icon-btn > div.stButton > button p::first-line {
+    font-size: 2.5rem !important; /* 이모지 크기 살짝 조정 */
 }
 
 /* 기능 카드 (Landing) */
