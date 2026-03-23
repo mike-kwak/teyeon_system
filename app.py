@@ -506,7 +506,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v4.0</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v4.2</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
@@ -514,7 +514,7 @@ def _render_home(user: dict, role: str):
 </div>
 <div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">\u26a1 \ube60\ub978 \uc774\ub3d9</div>
 """, unsafe_allow_html=True)
-    # ── v4.0 무적의 NON-STACKING 3열 컬럼 ──
+    # ── v4.2 무적의 NON-STACKING 3열 컬럼 ──
     rows = [HOME_MENU[i:i+3] for i in range(0, len(HOME_MENU), 3)]
     for row in rows:
         cols = st.columns(3)
