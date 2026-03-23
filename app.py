@@ -139,18 +139,18 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
 }
 
-/* 💻 Action Tower & Grid System (Force 3-Column on Mobile) */
+/* 💻 Action Tower & Grid System (iPhone-Proof Grid) */
 .at-grid-layout [data-testid="stHorizontalBlock"] {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 10px !important;
     width: 100% !important;
+    margin-top: 5px !important;
 }
 .at-grid-layout [data-testid="column"] {
-    flex: 1 1 calc(33.333% - 8px) !important;
-    min-width: 90px !important;
-    width: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
 }
 .icon-btn > div.stButton > button {
     width: 100% !important;
