@@ -37,22 +37,21 @@ div.stButton > button:first-child { background-color: #FEE500 !important; color:
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
     
-    /* v8.0: 마커 바로 뒤의 컬럼들만 가로로 고정 (메인 레이아웃 붕괴 방지) */
+    /* v8.1: 특정 컨테이너 내의 컬럼들만 가로로 고정 (확실한 격리) */
     @media (max-width: 768px) {
-        div:has(> .member-check-grid-marker) + div[data-testid="stHorizontalBlock"] {
+        div.attendance-container [data-testid="stHorizontalBlock"] {
             display: flex !important;
             flex-direction: row !important;
             flex-wrap: wrap !important;
             align-items: flex-start !important;
             gap: 4px !important;
         }
-        div:has(> .member-check-grid-marker) + div[data-testid="stHorizontalBlock"] > div {
+        div.attendance-container [data-testid="stHorizontalBlock"] > div {
             flex: 1 1 31% !important;
             width: 31% !important;
             min-width: 0 !important;
-            margin-bottom: 4px !important;
         }
-        div:has(> .member-check-grid-marker) + div[data-testid="stHorizontalBlock"] label {
+        div.attendance-container label {
             font-size: 0.7rem !important;
             padding: 2px 0 !important;
         }
@@ -115,12 +114,16 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    st.markdown('<div class="member-check-grid-marker"></div>', unsafe_allow_html=True)
+    # v8.1: 확실한 CSS 타겟팅을 위한 래퍼 컨테이너
+    st.markdown('<div class="attendance-container">', unsafe_allow_html=True)
     m_cols = st.columns(3)
     for i, m in enumerate(filtered):
         m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
         with m_cols[i % 3]:
-            display_name = f"{m_name} [{st.session_state.player_groups.get(m_name, 'A')}]" if st.session_state.use_group_division else m_name
+            display_name = f"{m_name}" # v8.1: 이름만 표시 (필요시 조 정보 추가)
+            if st.session_state.use_group_division:
+                 display_name += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
+            
             if st.checkbox(display_name, value=m_id in st.session_state.selected_members, key=f"mem_{m_id}"):
                 if m_id not in st.session_state.selected_members: st.session_state.selected_members.append(m_id)
                 if m_name not in st.session_state.player_times: st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
@@ -129,6 +132,7 @@ with col_left:
                 if m_id in st.session_state.selected_members:
                     st.session_state.selected_members.remove(m_id)
                     st.session_state.player_times.pop(m_name, None); st.session_state.player_groups.pop(m_name, None)
+    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_right:
