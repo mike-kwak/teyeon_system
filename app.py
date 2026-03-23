@@ -194,6 +194,15 @@ html, body, [class*="css"] {
 }
 .icon-btn > div.stButton > button p::first-line { font-size: 2.1rem !important; }
 
+/* 잠김/준비중 상태 (v4.0) */
+.icon-btn-locked, .icon-btn-coming {
+    opacity: 0.5 !important;
+    filter: grayscale(0.8) !important;
+}
+.icon-btn-locked .stButton button, .icon-btn-coming .stButton button {
+    cursor: default !important;
+}
+
 /* ── Action Tower Profile Card (Dark Premium) ── */
 .at-profile-card {
     display: flex; align-items: center; justify-content: space-between;
@@ -497,7 +506,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.8</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v4.0</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
