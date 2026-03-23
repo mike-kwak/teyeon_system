@@ -37,45 +37,28 @@ div.stButton > button:first-child { background-color: #FEE500 !important; color:
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
 
-/* v14.0: 궁극의 레거시 3열 강제 (모든 모바일 브라우저 대응) */
-@media (max-width: 768px) {
-    /* [원본] 스트림릿 컬럼 시스템 무력화 및 가로 3열 강제 */
-    div[data-testid="column"] {
-        flex: 1 1 31% !important;
-        width: 31% !important;
-        min-width: 30% !important;
-        display: inline-block !important;
-        float: left !important;
-        margin-right: 1% !important;
-    }
-    div[data-testid="stHorizontalBlock"] {
-        display: block !important; /* flex를 풀고 block-inline 형태로 유도 */
-        flex-direction: row !important;
-    }
-    
-    /* [버튼] 촌스러운 노란색 완전 탈출 + 네온 로즈 디자인 */
-    div.stButton > button {
-        width: 100% !important;
-        padding: 8px 1px !important;
-        font-size: 0.72rem !important;
-        font-weight: 700 !important;
-        color: #cbd5e1 !important;
-        background: rgba(45, 45, 65, 0.9) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 8px !important;
-        margin-bottom: 5px !important;
-    }
+/* v15.0: 모든 레거시 스타일 파기 및 순정 기반 네온 스타일링 */
+/* 촌스러운 노란색($yellow)의 영향을 받지 않도록 모든 버튼 스타일 초기화 */
+div.stButton > button {
+    background: rgba(45, 45, 65, 0.9) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 10px 1px !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
 }
 
-/* 선택된 버튼 스타일 (Neon Orange-Red) */
-/* JS 없이도 버튼의 key나 내용을 보고 색을 입히기 위해 content 매칭 사용 */
-/* 하지만 안정성을 위해 데이터 속성 기반 스타일링도 유지 */
-div.stButton button[data-member-active="true"] {
+/* 선택된 버튼: 선명한 네온 로즈 (v15.0) */
+div.stButton > button[data-active="true"] {
     background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
-    color: #fff !important;
+    color: white !important;
     border-color: #ff3d71 !important;
-    box-shadow: 0 0 12px rgba(255, 61, 113, 0.5) !important;
+    box-shadow: 0 0 15px rgba(255, 61, 113, 0.5) !important;
 }
+
+/* 모바일 3열 강제 전용 마커 */
+.mobile-3col-container { display: none; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -157,7 +140,37 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    # v14.0: 레거시 3열 컬럼 그리드 (선택 안정성 100%)
+    # v15.0: JS 기반 무적의 3열 엔진 + 네이티브 버튼
+    # 이 구역의 버튼들을 가로로 정렬하기 위한 JS 엔진 주입
+    st.markdown("""
+        <div class="mobile-3col-marker"></div>
+        <script>
+        function repair_grid() {
+            var marker = window.parent.document.querySelector('.mobile-3col-marker');
+            if(!marker) return;
+            
+            var row = marker.closest('.element-container').nextElementSibling;
+            while(row && row.querySelector('[data-testid="stHorizontalBlock"]')) {
+                var container = row.querySelector('[data-testid="stHorizontalBlock"]');
+                container.style.display = 'flex';
+                container.style.flexDirection = 'row';
+                container.style.flexWrap = 'nowrap';
+                container.style.gap = '4px';
+                
+                var cols = container.querySelectorAll('[data-testid="column"]');
+                cols.forEach(c => {
+                    c.style.width = '32%';
+                    c.style.flex = '1 1 32%';
+                    c.style.minWidth = '30%';
+                });
+                row = row.nextElementSibling;
+            }
+        }
+        // 즉시 실행 및 주기적 감시 (Streamlit의 동적 렌더링 때문)
+        setInterval(repair_grid, 300);
+        </script>
+    """, unsafe_allow_html=True)
+
     for i in range(0, len(filtered), 3):
         cols = st.columns(3)
         for j in range(3):
@@ -171,8 +184,7 @@ with col_left:
                     display_text += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
                 
                 with cols[j]:
-                    # 네이티브 버튼으로 100% 선택 반응 보장
-                    if st.button(display_text, key=f"v14_{m_id}", use_container_width=True):
+                    if st.button(display_text, key=f"v15_{m_id}", use_container_width=True):
                         if is_active:
                             st.session_state.selected_members.remove(m_id)
                             st.session_state.player_times.pop(m_name, None)
@@ -183,15 +195,15 @@ with col_left:
                             st.session_state.player_groups[m_name] = "A"
                         st.rerun()
 
-                    # 선택된 버튼 색상을 바꾸기 위한 JS 속성 주입 (Neon Effect)
+                    # 선택 표시 (네온 로즈)
                     if is_active:
                         st.markdown(f"""<script>
                             window.parent.document.querySelectorAll('button').forEach(b => {{
-                                if(b.innerText.trim() === "{display_text}") b.setAttribute('data-member-active', 'true');
+                                if(b.innerText.trim() === "{display_text}") b.setAttribute('data-active', 'true');
                             }});
                         </script>""", unsafe_allow_html=True)
 
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v14"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v15"):
         st.session_state.selected_members = []
         st.session_state.player_times = {}
         st.session_state.player_groups = {}
