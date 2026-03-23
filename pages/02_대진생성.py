@@ -37,36 +37,39 @@ div.stButton > button:first-child { background-color: #FEE500 !important; color:
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
 
-/* v12.0: 궁극의 순정 컬럼 무력화 CSS (Native Pro-Max) */
-[data-testid="stHorizontalBlock"]:has(.attendance-grid-marker) {
+/* v13.0: 최첨단 격리형 3열 그리드 (Safe Native Grid) */
+/* 마커 바로 뒤에 오는 수평 블록만 선택하여 3열 강제 */
+div.attendance-marker + div[data-testid="stHorizontalBlock"] {
     display: flex !important;
-    flex-direction: row !important; /* 강제 가로 정렬 */
-    flex-wrap: wrap !important;
-    gap: 4px !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important; /* 한 줄에 3개 강제 */
+    gap: 5px !important;
+    margin-bottom: -15px !important; /* 간격 최적화 */
 }
-[data-testid="stHorizontalBlock"]:has(.attendance-grid-marker) > div {
-    flex: 1 1 32% !important; /* 33% 3열 강제 */
+div.attendance-marker + div[data-testid="stHorizontalBlock"] > div {
+    flex: 1 1 32% !important;
+    width: 32% !important;
     min-width: 30% !important;
 }
 
-/* 버튼 스타일: 촌스러운 노란색 탈출 및 세련된 네온 디자인 */
-.attendance-grid-marker + div button {
+/* 버튼 디자인: 네온 칩 스타일 */
+div.attendance-marker + div[data-testid="stHorizontalBlock"] button {
     width: 100% !important;
-    padding: 10px 1px !important;
+    padding: 8px 1px !important;
     font-size: 0.72rem !important;
     font-weight: 700 !important;
     border-radius: 8px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    background: rgba(45, 45, 65, 0.8) !important;
+    background: rgba(50, 50, 70, 0.8) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: #cbd5e1 !important;
+    transition: all 0.2s !important;
 }
-/* 선택된 상태 버튼 (Neon Pink/Orange) */
-.attendance-grid-marker + div button[data-member-active="true"] {
+/* 선택 상태 버튼 (Neon Pink/Orange) */
+div.attendance-marker + div[data-testid="stHorizontalBlock"] button[data-member-active="true"] {
     background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
     color: #fff !important;
     border-color: #ff3d71 !important;
-    box-shadow: 0 0 15px rgba(255, 61, 113, 0.4) !important;
+    box-shadow: 0 0 12px rgba(255, 61, 113, 0.4) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -149,12 +152,10 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    # v12.0: 네이티브 3열 컬럼 + 버튼 (안정성 100%)
-    # CSS에서 이 구역을 찾기 위한 마커 주입
-    st.markdown('<div class="attendance-grid-marker"></div>', unsafe_allow_html=True)
-    
-    # 총 3개 섹션(컬럼)으로 나누어 배치
+    # v13.0: 격리형 네이티브 3열 컬럼
     for i in range(0, len(filtered), 3):
+        # 각 행마다 마커를 주입하여 바로 아래의 columns 섹션만 3열 강제
+        st.markdown('<div class="attendance-marker"></div>', unsafe_allow_html=True)
         cols = st.columns(3)
         for j in range(3):
             if i + j < len(filtered):
@@ -167,7 +168,8 @@ with col_left:
                     display_text += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
                 
                 with cols[j]:
-                    if st.button(display_text, key=f"v120_{m_id}", use_container_width=True):
+                    # 네이티브 버튼으로 100% 클릭 보장
+                    if st.button(display_text, key=f"v13_{m_id}", use_container_width=True):
                         if is_active:
                             st.session_state.selected_members.remove(m_id)
                             st.session_state.player_times.pop(m_name, None)
@@ -178,7 +180,7 @@ with col_left:
                             st.session_state.player_groups[m_name] = "A"
                         st.rerun()
 
-                    # 선택된 버튼 표시용 JS (속성 주입)
+                    # 선택 표시용 JS 주입
                     if is_active:
                         st.markdown(f"""<script>
                             window.parent.document.querySelectorAll('button').forEach(b => {{
@@ -186,7 +188,7 @@ with col_left:
                             }});
                         </script>""", unsafe_allow_html=True)
 
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v12"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v13"):
         st.session_state.selected_members = []
         st.session_state.player_times = {}
         st.session_state.player_groups = {}
