@@ -220,7 +220,7 @@ with main_tabs[1]:
             players_info.append({
                 "name": name,
                 "birthdate": m_info.get("birthdate", "1900-01-01"),
-                "is_guest": m_info.get("kakao_id", 0) < 0 or name.startswith("Guest") or "is_guest" in m_info
+                "is_guest": (m_info.get("kakao_id") or 0) < 0 or name.startswith("Guest") or m_info.get("is_guest") == True
             })
             
         overall_rank, _ = get_rankings_v3(matches, players_info)

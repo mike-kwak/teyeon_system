@@ -65,7 +65,7 @@ for name in player_names:
     players_info.append({
         "name": name,
         "birthdate": m_info.get("birthdate", "1900-01-01"),
-        "is_guest": m_info.get("kakao_id", 0) < 0 or name.startswith("Guest") or "is_guest" in m_info
+        "is_guest": (m_info.get("kakao_id") or 0) < 0 or name.startswith("Guest") or m_info.get("is_guest") == True
     })
 
 # 2. 랭킹 계산
@@ -126,10 +126,9 @@ if is_admin and session_data["status"] != "completed":
                             "member_id": m_id,
                             "wins": r["승"],
                             "losses": r["패"],
-                            "pts_diff": r["득실차"],
-                            "matches_count": r["경기수"],
+                            "points_diff": r["득실차"],
                             "rank": r["순위"],
-                            "reward_amount": rewards.get(name, 0) - fines.get(name, 0)
+                            "reward": rewards.get(name, 0) - fines.get(name, 0)
                         })
                 if db_results:
                     upsert_kdk_results(db_results)
