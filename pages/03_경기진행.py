@@ -61,7 +61,11 @@ div[data-testid="column"]:has(.team-card-wrapper) {
 .kdk-score-number {
     font-size: 5.5rem; font-weight: 900; color: #CCFF00; line-height: 1;
     text-align: center; font-family: 'Outfit', sans-serif;
-    text-shadow: 0 0 25px rgba(204,255,0,0.5); margin-bottom: 20px;
+    text-shadow: 0 0 30px rgba(204,255,0,0.6); margin-bottom: 20px;
+}
+.kdk-score-number-bg {
+    background: rgba(0,0,0,0.3); border-radius: 20px; padding: 15px 0;
+    margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);
 }
 .kdk-vs-text {
     font-size: 1.8rem; font-weight: 900; color: #aab8d4;
@@ -150,8 +154,10 @@ with main_tabs[0]:
                 <div style="font-size:2rem;margin-bottom:5px;">👤</div>
                 {names_html1}
             </div>
+            <div class="kdk-score-number-bg">
+                <div class="kdk-score-number">{st.session_state.s1_val}</div>
+            </div>
             ''', unsafe_allow_html=True)
-            st.markdown(f'<div class="kdk-score-number">{st.session_state.s1_val}</div>', unsafe_allow_html=True)
         
             c_p1, c_m1 = st.columns(2)
             with c_p1: st.button("➕", key="s1p", on_click=change_s, args=(1, 1), use_container_width=True)
@@ -168,8 +174,10 @@ with main_tabs[0]:
                 <div style="font-size:2rem;margin-bottom:5px;">🔴</div>
                 {names_html2}
             </div>
+            <div class="kdk-score-number-bg">
+                <div class="kdk-score-number">{st.session_state.s2_val}</div>
+            </div>
             ''', unsafe_allow_html=True)
-            st.markdown(f'<div class="kdk-score-number">{st.session_state.s2_val}</div>', unsafe_allow_html=True)
         
             c_p2, c_m2 = st.columns(2)
             with c_p2: st.button("➕", key="s2p", on_click=change_s, args=(2, 1), use_container_width=True)

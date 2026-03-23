@@ -147,6 +147,48 @@ html, body, [class*="css"] {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* ── Action Tower 전용 (White Card Style) ── */
+.at-profile-card {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #FFFFFF !important;
+    border-radius: 24px !important;
+    padding: 20px 22px !important;
+    margin-bottom: 25px !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
+    border: none !important;
+}
+.at-profile-info { display: flex; align-items: center; gap: 16px; }
+.at-avatar {
+    width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+    border: 2px solid #CCFF00;
+}
+.at-avatar-init {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: #f1f3f5;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 22px; color: #343a40;
+}
+.at-name {
+    font-family: 'Montserrat', sans-serif; font-weight: 800;
+    font-size: 1.2rem; color: #1a1a1a !important; line-height: 1.2;
+}
+.at-badge {
+    display: inline-block; font-size: 0.75rem; font-weight: 700;
+    padding: 3px 12px; border-radius: 30px; margin-top: 6px;
+    background: #f8f9fa; color: #1a1a1a; border: 1px solid #dee2e6;
+}
+.at-ceo-btn {
+    background: #1a1a1a !important;
+    color: #FFFFFF !important; font-weight: 800 !important;
+    font-size: 0.85rem !important; border: none !important;
+    border-radius: 16px !important; padding: 12px 18px !important;
+    cursor: pointer; white-space: nowrap; text-decoration: none;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+.at-ceo-btn:hover {
+    background: #CCFF00 !important; color: #000 !important;
+}
+
 /* 기능 카드 (Landing) */
 .feature-card {
     background: rgba(255, 255, 255, 0.03);
@@ -404,12 +446,12 @@ ROLE_LABELS = {
     "Guest":  ("🔓 게스트",     "#aab8d4"),
 }
 HOME_MENU = [
-    dict(icon="👥", label="멤버 정보",   page="pages/07_멤버정보.py",  min_role="Member", coming_soon=False),
+    dict(icon="👤", label="멤버 정보",   page="pages/07_멤버정보.py",  min_role="Member", coming_soon=False),
     dict(icon="🎾", label="KDK 대진표",  page="pages/02_대진생성.py",  min_role="Staff",  coming_soon=False),
     dict(icon="🏆", label="실시간 랭킹",  page="pages/05_랭킹.py",      min_role="Member", coming_soon=False),
     dict(icon="💰", label="상벌금 현황",  page="pages/04_재무.py",      min_role="Member", coming_soon=False),
     dict(icon="🏅", label="대회 모드",    page=None,                    min_role="Member", coming_soon=True),
-    dict(icon="💬", label="커뮤니티",      page=None,                    min_role="Member", coming_soon=True),
+    dict(icon="💬", label="재무",         page="pages/04_재무.py",      min_role="Member", coming_soon=False),
 ]
 
 def _render_home(user: dict, role: str):
@@ -559,40 +601,41 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
         {avatar}
         <div>
             <div class="at-name">⭐ {nickname} 님 안녕하세요!</div>
-            <div class="at-badge" style="color:{role_color};border-color:{role_color}44;">{role_text}</div>
+            <div class="at-badge">{role_text}</div>
         </div>
     </div>
     {ceo_btn}
 </div>
-<div class="at-grid-title">⚡ 빠른 이동</div>
+<div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">⚡ Action Tower</div>
 """, unsafe_allow_html=True)
 
-    # ── 완벽 반응형(Fluid) 아이콘 그리드 ──
-    # 단일 블록 안에 전부 던져놓고, CSS flex-wrap의 힘으로 2열/3열을 화면 크기별로 자동 계산하게 만듭니다.
-    cols = st.columns(len(HOME_MENU))
-    for col, item in zip(cols, HOME_MENU):
-        locked = not can_access(item["min_role"])
-        coming = item["coming_soon"]
-        if coming:
-            div_class = "icon-btn icon-btn-coming"
-            badge = " 🚧"
-        elif locked:
-            div_class = "icon-btn icon-btn-locked"
-            badge = " 🔒"
-        else:
-            div_class = "icon-btn"
-            badge = ""
-        btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
-        with col:
-            st.markdown(f'<div class="{div_class}">', unsafe_allow_html=True)
-            if st.button(btn_label, key=f"home_{item['icon']}", use_container_width=True):
-                if coming:
-                    st.toast("🚧 준비 중입니다.")
-                elif locked:
-                    st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
-                elif item["page"]:
-                    st.switch_page(item["page"])
-            st.markdown("</div>", unsafe_allow_html=True)
+    # ── 완벽 반응형(Fluid) 3열 아이콘 그리드 ──
+    rows = [HOME_MENU[i:i+3] for i in range(0, len(HOME_MENU), 3)]
+    for row in rows:
+        cols = st.columns(3)
+        for col, item in zip(cols, row):
+            locked = not can_access(item["min_role"])
+            coming = item["coming_soon"]
+            if coming:
+                div_class = "icon-btn icon-btn-coming"
+                badge = " 🚧"
+            elif locked:
+                div_class = "icon-btn icon-btn-locked"
+                badge = " 🔒"
+            else:
+                div_class = "icon-btn"
+                badge = ""
+            btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
+            with col:
+                st.markdown(f'<div class="{div_class}">', unsafe_allow_html=True)
+                if st.button(btn_label, key=f"home_{item['icon']}_{item['label']}", use_container_width=True):
+                    if coming:
+                        st.toast("🚧 준비 중입니다.")
+                    elif locked:
+                        st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
+                    elif item["page"]:
+                        st.switch_page(item["page"])
+                st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
