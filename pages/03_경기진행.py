@@ -198,6 +198,3 @@ else:
             st.session_state.editing_match_idx = idx
             st.rerun()
 
-# 3. 순위 (간소화)
-with view_tabs[2]:
-    st.write("순위 계산 로직은 03_경기결과.py 에서 확인 가능합니다.")
