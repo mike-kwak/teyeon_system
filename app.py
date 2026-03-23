@@ -210,6 +210,22 @@ html, body, [class*="css"] {
     cursor: pointer; white-space: nowrap; text-decoration: none;
     box-shadow: 0 4px 16px rgba(204,255,0,0.35);
 }
+
+/* ── 기타 보조 스타일 ── */
+.sidebar-profile { background: rgba(255, 255, 255, 0.05); border-radius: 18px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); }
+.sidebar-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #FEE500; }
+.feature-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 20px; margin-bottom: 15px; transition: all 0.3s ease; }
+.feature-card:hover { background: rgba(255, 255, 255, 0.06); border-color: #CCFF00; transform: translateX(5px); }
+
+/* 스코어 입력창 가로 정렬 강제 */
+div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; gap: 10px !important; }
+div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="column"] { width: auto !important; flex: 1 !important; }
+
+/* 데스크톱 모바일 최적화 */
+@media (min-width: 768px) {
+    [data-testid="collapsedControl"] { display: none !important; }
+    button[data-testid="baseButton-headerNoPadding"] { display: none !important; }
+}
 </style>
 """, unsafe_allow_html=True)
 
