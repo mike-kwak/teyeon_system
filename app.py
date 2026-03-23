@@ -583,14 +583,6 @@ def main():
     user = st.session_state.get("user")
     role = st.session_state.get("role", "Guest")
 
-    # ── v3.2 네비게이션 핸들러 (세션 복구 후 실행) ──
-    nav_target = params.get("nav")
-    if nav_target:
-        page_map = {item["id"]: item["page"] for item in HOME_MENU if item["page"]}
-        if nav_target in page_map:
-            # 타겟 메뉴의 권한 체크 추가 가능
-            st.switch_page(page_map[nav_target])
-
     # 접속 로그 기록 (항상)
     nickname = user.get("nickname", "Guest") if user else "Visitor"
     member_id = user.get("id") if user and not user.get("is_guest") else None
