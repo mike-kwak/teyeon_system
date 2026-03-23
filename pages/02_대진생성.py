@@ -37,28 +37,21 @@ div.stButton > button:first-child { background-color: #FEE500 !important; color:
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
     
-    /* v8.5: 무적의 Flexbox 3열 그리드 (st.columns 미사용 우회법) */
-    div.attendance-flex-area [data-testid="stVerticalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        gap: 5px !important;
+/* v8.6: 모바일 환경 (화면 너비 768px 이하) - 사용자 직접 요청 무적의 3열 */
+@media (max-width: 768px) {
+    /* 체크박스를 감싸는 개별 컨테이너를 인라인 블록으로 강제 전환 */
+    div.element-container:has(div[data-testid="stCheckbox"]) {
+        display: inline-block !important;
+        width: 32% !important; /* 3열 꽉 채우기 */
+        margin-bottom: 10px !important;
+        vertical-align: top !important;
     }
-    div.attendance-flex-area [data-testid="stVerticalBlock"] > div {
-        flex: 1 1 31% !important;
-        width: 31% !important;
-        min-width: 0 !important;
-        margin: 0 !important;
+    /* 체크박스 안의 글자 크기 최적화 (짤림 방지) */
+    div[data-testid="stCheckbox"] label {
+        font-size: 14px !important;
+        padding-left: 1.5rem !important; /* 체크박스 아이콘과 글자 사이 간격 */
     }
-    
-    @media (max-width: 768px) {
-        div.attendance-flex-area label {
-            font-size: 0.72rem !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-        }
-    }
+}
 </style>
 """, unsafe_allow_html=True)
 
