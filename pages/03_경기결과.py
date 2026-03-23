@@ -102,6 +102,11 @@ for r in overall_rank:
     })
 st.dataframe(pd.DataFrame(res_data), use_container_width=True, hide_index=True)
 
+if fines:
+    st.markdown("#### 💸 벌금 입금 계좌")
+    st.code(award_config.get("account_number", "카카오뱅크 곽민섭 3333-01-5235337"), language=None)
+
+
 # ── 결과 확정 버튼 (운영진 전용) ─────────────────────────────────────────────
 if is_admin and session_data["status"] != "completed":
     st.divider()
@@ -177,6 +182,7 @@ fine_items = []
 for name, amt in fines.items():
     fine_items.append(f"{name}({amt//1000}k)")
 share_text += " / ".join(fine_items)
+share_text += "\n\n입금 계좌: " + award_config.get("account_number", "카카오뱅크 곽민섭 3333-01-5235337")
 share_text += "\n━━━━━━━━━━━━━━━━━━━\n"
 share_text += "모두 수고하셨습니다! 🎾"
 

@@ -52,6 +52,8 @@ if 'use_group_division' not in st.session_state: st.session_state.use_group_divi
 if 'reward_1st' not in st.session_state: st.session_state.reward_1st = 10000
 if 'fine_25' not in st.session_state: st.session_state.fine_25 = 3000
 if 'fine_last_25' not in st.session_state: st.session_state.fine_last_25 = 5000
+if 'default_score' not in st.session_state: st.session_state.default_score = 1
+if 'account_number' not in st.session_state: st.session_state.account_number = "카카오뱅크 곽민섭 3333-01-5235337"
 
 members = get_all_members(CLUB_ID)
 members.sort(key=lambda x: x.get("nickname", ""))
@@ -174,11 +176,16 @@ with col_right:
     st.markdown("---")
     session_title = st.text_input("📝 대진표 제목", value=f"대진표_{datetime.now().strftime('%m%d_%H%M')}")
     match_rules = st.text_input("📜 경기 규칙", value="(모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승...)")
+    
+    st.session_state.default_score = st.number_input("기본 시작 점수", min_value=0, max_value=5, value=st.session_state.default_score)
+
     st.markdown("### 💰 상벌금")
     sc1, sc2, sc3 = st.columns(3)
     with sc1: st.session_state.reward_1st = st.number_input("1등", value=st.session_state.reward_1st, step=1000)
     with sc2: st.session_state.fine_25 = st.number_input("하위 25%", value=st.session_state.fine_25, step=1000)
     with sc3: st.session_state.fine_last_25 = st.number_input("최하위 25%", value=st.session_state.fine_last_25, step=1000)
+    
+    st.session_state.account_number = st.text_input("벌금 입금 계좌", value=st.session_state.account_number)
     
     if st.button("🚀 KDK 대진 자동 생성", use_container_width=True):
         if len(all_selected_names) < 4: st.error("최소 4명 이상 선택해주세요.")
@@ -190,12 +197,18 @@ with col_right:
                 m_info = next((m for m in members if m["nickname"] == n), {})
                 players.append({"name": n, "group": st.session_state.player_groups.get(n, "A"), "times": st.session_state.player_times.get(n, [st.session_state.global_start, st.session_state.global_end]), "is_guest": n in st.session_state.guests})
             matches = generate_kdk_matches_v3(players, court_map, target_matches, concept=concept, fixed_partners=st.session_state.fixed_partners, fixed_partner_games=st.session_state.fixed_partner_games)
-            award_config = {"reward_1st": st.session_state.reward_1st, "fine_25": st.session_state.fine_25, "fine_last_25": st.session_state.fine_last_25}
+            
+            # 기본 점수 일괄 적용
+            for m in matches:
+                m['score1'] = st.session_state.default_score
+                m['score2'] = st.session_state.default_score
+                
+            award_config = {"reward_1st": st.session_state.reward_1st, "fine_25": st.session_state.fine_25, "fine_last_25": st.session_state.fine_last_25, "account_number": st.session_state.account_number}
             c_id = CLUB_ID if CLUB_ID else None
             creator_id = st.session_state.get("user", {}).get("id")
             new_session = create_kdk_session(c_id, datetime.now().strftime("%Y-%m-%d"), creator_id, note=f"{concept} | {session_title}", award_config=award_config, title=session_title)
             if new_session:
-                db_matches = [{"session_id": new_session["id"], "group": m["group"], "round": m["round"], "court": m["court"], "team1": m["team1"], "team2": m["team2"], "score1": 0, "score2": 0, "status": "pending"} for m in matches]
+                db_matches = [{"session_id": new_session["id"], "group": m["group"], "round": m["round"], "court": m["court"], "team1": m["team1"], "team2": m["team2"], "score1": m["score1"], "score2": m["score2"], "status": "pending"} for m in matches]
                 upsert_kdk_matches(db_matches)
                 st.session_state.kdk_all_data = {"session_id": new_session["id"], "players": players, "matches": matches, "match_rules": match_rules, "title": session_title}
                 st.session_state.match_created_msg = "🚀 대진표 생성 및 저장 완료!"
