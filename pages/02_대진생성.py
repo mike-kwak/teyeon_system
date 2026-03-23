@@ -37,30 +37,33 @@ div.stButton > button:first-child { background-color: #FEE500 !important; color:
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
 
-/* v10.1: 보더 컨테이너 기반 3열 강제 버튼 그리드 (가장 안정적) */
-[data-testid="stVerticalBlockBordered"] > div > div.element-container {
-    display: inline-block !important;
-    width: 32% !important;
-    margin-bottom: 5px !important;
-    vertical-align: top !important;
+/* v11.0: 최후의 수단 - 후디니 그리드 (순수 HTML + 히든 싱크) */
+.houdini-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
 }
-[data-testid="stVerticalBlockBordered"] button {
-    width: 100% !important;
-    padding: 8px 1px !important;
-    font-size: 0.75rem !important;
+.houdini-chip {
     background: rgba(45, 45, 65, 0.9) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 8px !important;
+    padding: 12px 2px !important;
+    text-align: center !important;
+    font-size: 0.72rem !important;
     color: #ccc !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
 }
-/* 클릭된 버튼(세션 스테이트 기반) 스타일링 */
-[data-testid="stVerticalBlockBordered"] button[data-active="true"] {
+.houdini-chip.active {
     background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
+    border-color: #ff3d71 !important;
     color: #fff !important;
     font-weight: 800 !important;
+    box-shadow: 0 0 12px rgba(255, 61, 113, 0.5) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -140,39 +143,62 @@ with col_left:
     except Exception as e:
         st.error(f"선택 처리 중 오류 발생: {e}")
 
+    # ── v11.0: 후디니 그리드 클릭 처리 (히든 인풋 동기화) ──
+    # JS가 업데이트한 hidden_toggle_id 값을 감지
+    sync_id = st.text_input("sync_id", key="attendance_sync_input", label_visibility="collapsed")
+    if sync_id:
+        target_m = next((m for m in members if str(m.get("id")) == str(sync_id)), None)
+        if target_m:
+            m_id, m_name = target_m["id"], target_m.get("nickname", "")
+            if m_id in st.session_state.selected_members:
+                st.session_state.selected_members.remove(m_id)
+                st.session_state.player_times.pop(m_name, None)
+                st.session_state.player_groups.pop(m_name, None)
+            else:
+                st.session_state.selected_members.append(m_id)
+                st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
+                st.session_state.player_groups[m_name] = "A"
+        # 처리 후 인풋 초기화 (Rerun 트리거)
+        st.markdown("""<script>
+            var input = window.parent.document.querySelector('input[aria-label="sync_id"]');
+            if(input) {
+                input.value = "";
+                input.dispatchEvent(new Event('input', {bubbles: true}));
+                input.dispatchEvent(new Event('change', {bubbles: true}));
+            }
+        </script>""", unsafe_allow_html=True)
+        st.rerun()
+
+    # 인풋 숨기기
+    st.markdown('<style>div[data-testid="stTextInput"]:has(input[aria-label="sync_id"]) { display:none !important; }</style>', unsafe_allow_html=True)
+
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    # v10.1: 보더 컨테이너 + 네이티브 버튼 (가장 확실한 3열 확보 방식)
-    # st.container(border=True)가 [data-testid="stVerticalBlockBordered"]를 생성함
-    with st.container(border=True):
-        for i, m in enumerate(filtered):
-            m_id, m_name = m["id"], m.get("nickname", "이름없음")
-            is_active = m_id in st.session_state.selected_members
-            display_text = m_name
-            if st.session_state.use_group_division:
-                display_text += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
-            
-            # 버튼 클릭 시 토글
-            if st.button(display_text, key=f"v101_{m_id}", use_container_width=True):
-                if is_active:
-                    st.session_state.selected_members.remove(m_id)
-                    st.session_state.player_times.pop(m_name, None)
-                    st.session_state.player_groups.pop(m_name, None)
-                else:
-                    st.session_state.selected_members.append(m_id)
-                    st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
-                    st.session_state.player_groups[m_name] = "A"
-                st.rerun()
-
-            # 선택된 인원은 CSS에서 인식할 수 있도록 JS로 속성 주입 (매우 간단한 로직)
-            if is_active:
-                st.markdown(f"""<script>
-                    var btns = window.parent.document.querySelectorAll('button');
-                    btns.forEach(b => {{ if(b.innerText.includes("{m_name}")) b.setAttribute('data-active', 'true'); }});
-                </script>""", unsafe_allow_html=True)
-
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v101"):
+    # v11.0: 무적의 후디니 HTML 그리드 렌더링
+    grid_html = '<div class="houdini-grid">'
+    for m in filtered:
+        m_id, m_name = m["id"], m.get("nickname", "이름없음")
+        is_active = "active" if m_id in st.session_state.selected_members else ""
+        display_text = m_name
+        if st.session_state.use_group_division:
+            display_text += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
+        
+        # 클릭 시 JS로 히든 인풋 업데이트 및 이벤트 발생
+        click_js = f"""
+            var input = window.parent.document.querySelector('input[aria-label=\\"sync_id\\"]');
+            if(input) {{
+                input.value = '{m_id}';
+                input.dispatchEvent(new Event('input', {{bubbles: true}}));
+                input.dispatchEvent(new Event('change', {{bubbles: true}}));
+            }}
+        """
+        grid_html += f'<div class="houdini-chip {is_active}" onclick="{click_js}">{display_text}</div>'
+    grid_html += '</div>'
+    
+    st.markdown(grid_html, unsafe_allow_html=True)
+    
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v11"):
         st.session_state.selected_members = []
         st.session_state.player_times = {}
         st.session_state.player_groups = {}
