@@ -51,32 +51,6 @@ div[data-testid="stCheckbox"] label:has(input:checked) p { color: black !importa
 .section-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
 </style>
 ''', unsafe_allow_html=True)
-div[data-testid="stCheckbox"] input[type="checkbox"] { display: none !important; }
-div[data-testid="stCheckbox"] div[data-baseweb="checkbox"] > div { display: none !important; }
-div[data-testid="stCheckbox"] label {
-    background-color: #1E1E2E !important;
-    border: 1px solid #4a4a6a !important;
-    border-radius: 8px !important;
-    padding: 10px 0px !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    width: 100% !important;
-    cursor: pointer !important;
-    min-height: 42px !important;
-}
-div[data-testid="stCheckbox"] label p { color: white !important; font-size: 13px !important; margin: 0 !important; font-weight: 700 !important; }
-div[data-testid="stCheckbox"] label[data-checked="true"] {
-    background-color: #39FF14 !important;
-    border-color: #39FF14 !important;
-    box-shadow: 0 0 8px rgba(57,255,20,0.4) !important;
-}
-div[data-testid="stCheckbox"] label[data-checked="true"] p { color: black !important; font-weight: 900 !important; }
-div[data-testid="stCheckbox"] label:has(input:checked) { background-color: #39FF14 !important; border-color: #39FF14 !important; }
-div[data-testid="stCheckbox"] label:has(input:checked) p { color: black !important; font-weight: 900 !important; }
-.section-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
-</style>
-''', unsafe_allow_html=True)
 
 CLUB_ID = os.environ.get("CLUB_ID", "")
 
