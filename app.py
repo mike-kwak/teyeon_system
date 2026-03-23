@@ -221,7 +221,8 @@ html, body, [class*="css"] {
 div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; gap: 10px !important; }
 div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="column"] { width: auto !important; flex: 1 !important; }
 
-/* 데스크톱 모바일 최적화 */
+/* 데스크톱 모바일 최적화 및 레거시 버튼 제거 */
+header, footer, [data-testid="stHeader"], [data-testid="stDecoration"] { visibility: hidden !important; height: 0 !important; width: 0 !important; display: none !important; }
 @media (min-width: 768px) {
     [data-testid="collapsedControl"] { display: none !important; }
     button[data-testid="baseButton-headerNoPadding"] { display: none !important; }
