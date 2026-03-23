@@ -501,7 +501,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.1</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.2</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
@@ -542,12 +542,9 @@ import extra_streamlit_components as stx
 def main():
     params = st.query_params
     
-    # ── v3.0 네비게이션 핸들러 ──
-    nav_target = params.get("nav")
-    if nav_target:
-        page_map = {item["id"]: item["page"] for item in HOME_MENU if item["page"]}
-        if nav_target in page_map:
-            st.switch_page(page_map[nav_target])
+    # ── v3.0 네비게이션 핸들러 (v3.2에서 위치 이동) ──
+    # nav_target = params.get("nav")
+    # if nav_target: ...
 
     code = params.get("code")
 
@@ -575,6 +572,14 @@ def main():
 
     user = st.session_state.get("user")
     role = st.session_state.get("role", "Guest")
+
+    # ── v3.2 네비게이션 핸들러 (세션 복구 후 실행) ──
+    nav_target = params.get("nav")
+    if nav_target:
+        page_map = {item["id"]: item["page"] for item in HOME_MENU if item["page"]}
+        if nav_target in page_map:
+            # 타겟 메뉴의 권한 체크 추가 가능
+            st.switch_page(page_map[nav_target])
 
     # 접속 로그 기록 (항상)
     nickname = user.get("nickname", "Guest") if user else "Visitor"
