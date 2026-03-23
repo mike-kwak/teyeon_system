@@ -193,10 +193,12 @@ def calculate_rewards_v2(overall_rankings, reward_1st=10000, fine_25=3000, fine_
     
     if n == 0: return fines, reward
     
-    # 🥇 1위 상금 (게스트 제외, 공동 1위 포함)
+    # 🥇 1위 상금 (공동 1위 포함)
     for p in overall_rankings:
         if p["순위"] == 1:
-            if not p.get("is_guest", False):
+            # Guest* 로 시작하는 임시 계정만 제외하고 정식 회원은 모두 지급
+            is_temp_guest = str(p["이름"]).startswith("Guest") or p.get("is_guest") == True
+            if not is_temp_guest:
                 reward[p["이름"]] = reward_1st
         else:
             break

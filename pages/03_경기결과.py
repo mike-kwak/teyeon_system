@@ -89,25 +89,37 @@ st.subheader("🏆 최종 순위 및 정산")
 status_color = "#CCFF00" if session_data["status"] == "completed" else "#ff4b4b"
 st.markdown(f"상태: <span style='color:{status_color}; font-weight:bold;'>{session_data['status'].upper()}</span>", unsafe_allow_html=True)
 
-res_data = []
-for r in overall_rank:
-    name = r["이름"]
-    amt = rewards.get(name, 0) - fines.get(name, 0)
-    note = ""
-    if name in rewards: note = f"👑 1등 상금 (+{rewards[name]:,})"
-    elif name in fines: note = f"❗ 벌금 (-{fines[name]:,})"
-    res_data.append({
-        "순위": r["순위"], "이름": name, "승": r["승"], "패": r["패"], 
-        "득실차": r["득실차"], "경기수": r["경기수"], "정산액": f"{amt:,}원", "비고": note
-    })
-df_display = pd.DataFrame(res_data)
-st.dataframe(
-    df_display.style.set_properties(**{'text-align': 'center'}),
-    use_container_width=True, 
-    hide_index=True
-)
+# HTML 테이블로 가운데 정렬 구현
+html_table = f"""
+<style>
+    .ranking-table {{ width: 100%; border-collapse: collapse; margin-top: 10px; color: white; text-align: center; }}
+    .ranking-table th {{ background: rgba(204, 255, 0, 0.1); color: #CCFF00; padding: 12px; border-bottom: 2px solid rgba(254, 255, 0, 0.2); font-size: 0.9rem; }}
+    .ranking-table td {{ padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.85rem; }}
+    .ranking-table tr:nth-child(even) {{ background: rgba(255, 255, 255, 0.02); }}
+    .reward-tag {{ color: #CCFF00; font-weight: bold; }}
+    .penalty-tag {{ color: #ff4b4b; font-weight: bold; }}
+</style>
+<table class="ranking-table">
+    <thead>
+        <tr>
+            <th>순위</th><th>이름</th><th>승</th><th>패</th><th>득실차</th><th>경기수</th><th>정산액</th><th>비고</th>
+        </tr>
+    </thead>
+    <tbody>
+"""
+for r in res_data:
+    note_class = "reward-tag" if "상금" in r["비고"] else "penalty-tag" if "벌금" in r["비고"] else ""
+    html_table += f"""
+        <tr>
+            <td>{r['순위']}</td><td>{r['이름']}</td><td>{r['승']}</td><td>{r['패']}</td><td>{r['득실차']}</td><td>{r['경기수']}</td>
+            <td>{r['정산액']}</td><td class="{note_class}">{r['비고']}</td>
+        </tr>
+    """
+html_table += "</tbody></table>"
+st.markdown(html_table, unsafe_allow_html=True)
 
 if fines:
+    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("#### 💸 벌금 입금 계좌")
     st.code(award_config.get("account_number", "카카오뱅크 곽민섭 3333-01-5235337"), language=None)
 
