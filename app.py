@@ -12,6 +12,7 @@ TEYEON 테니스 클럽 관리 앱 메인 진입점.
 
 import streamlit as st
 from dotenv import load_dotenv
+import extra_streamlit_components as stx
 
 from core_logic.auth import get_kakao_auth_url, exchange_code_for_token, get_kakao_user_info, logout
 from db.supabase_client import upsert_member, get_member_by_kakao_id, log_access, get_menu_permissions
@@ -191,7 +192,7 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
 
 
 # ── 세션 초기화 ───────────────────────────────────────────────────────────
-def _init_session():
+def _init_session(cookie_manager):
     defaults = {
         "user": None,
         "access_token": None,
@@ -203,9 +204,18 @@ def _init_session():
         if k not in st.session_state:
             st.session_state[k] = v
 
+    # ── 자동 로그인 (Cookie Check) ──
+    if not st.session_state.get("user") and not st.session_state.get("is_guest"):
+        auth_cookie = cookie_manager.get(cookie="teyeon_auth")
+        if auth_cookie and isinstance(auth_cookie, dict):
+            # 쿠키에 유효한 정보가 있으면 세션 복구
+            for k in ["user", "access_token", "kakao_id", "is_admin", "role"]:
+                if k in auth_cookie:
+                    st.session_state[k] = auth_cookie[k]
+
 
 # ── 카카오 OAuth 콜백 처리 ─────────────────────────────────────────────────
-def _handle_oauth_callback():
+def _handle_oauth_callback(cookie_manager):
     """URL에 ?code= 파라미터가 있으면 토큰 교환 → 사용자 정보 조회 → DB upsert."""
     params = st.query_params
     code = params.get("code")
@@ -249,8 +259,21 @@ def _handle_oauth_callback():
         st.session_state["is_admin"]     = member.get("is_admin", False) if member else False
         st.session_state["role"]         = member.get("role", "Member") if member else "Member"
 
-        # URL 정리 (code 파라미터 제거)
+        # ── 브라우저 쿠키에 로그인 정보 저장 (30일 유지) ──
+        from datetime import datetime, timedelta
+        cookie_manager.set("teyeon_auth", {
+            "user": st.session_state["user"],
+            "access_token": st.session_state["access_token"],
+            "kakao_id": st.session_state["kakao_id"],
+            "is_admin": st.session_state["is_admin"],
+            "role": st.session_state["role"]
+        }, expires_at=datetime.now() + timedelta(days=30))
+
+        # URL 정리 & Rerun 보류 (쿠키 세팅을 위해 자연스럽게 렌더링되도록 함)
         st.query_params.clear()
+        st.toast("✅ 로그인 성공! 자동 로그인 쿠키가 저장되었습니다.")
+        import time
+        time.sleep(0.5) # 쿠키 반영을 위한 짧은 대기
         st.rerun()
 
 
@@ -333,7 +356,7 @@ def _render_landing():
 
 
 # ── 사이드바 (로그인 후) ──────────────────────────────────────────────────
-def _render_sidebar():
+def _render_sidebar(cookie_manager):
     user     = st.session_state.get("user", {})
     is_admin = st.session_state.get("is_admin", False)
 
@@ -369,7 +392,11 @@ def _render_sidebar():
         st.markdown("---")
         if st.button("로그아웃", use_container_width=True):
             logout(st.session_state)
+            cookie_manager.delete("teyeon_auth")
             st.query_params.clear()
+            st.toast("👋 로그아웃 되었습니다.")
+            import time
+            time.sleep(0.5) # 쿠키 삭제 반영 대기
             st.rerun()
 
 
@@ -576,9 +603,12 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
 
 
 # ── 메인 진입점 ───────────────────────────────────────────────────────────
+from core_logic.auth import get_manager
+
 def main():
-    _init_session()
-    _handle_oauth_callback()
+    cookie_manager = get_manager()
+    _init_session(cookie_manager)
+    _handle_oauth_callback(cookie_manager)
 
     user = st.session_state.get("user")
     role = st.session_state.get("role", "Guest")
@@ -591,7 +621,7 @@ def main():
     if not user:
         _render_landing()
     else:
-        _render_sidebar()
+        _render_sidebar(cookie_manager)
         _render_home(user, role)
 
 

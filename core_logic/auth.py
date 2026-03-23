@@ -111,3 +111,10 @@ def logout(session_state) -> None:
     """st.session_state에서 인증 정보 제거."""
     for key in ("user", "access_token", "is_admin", "role"):
         session_state.pop(key, None)
+
+import streamlit as st
+import extra_streamlit_components as stx
+
+@st.cache_resource
+def get_manager():
+    return stx.CookieManager(key="cookie_manager")

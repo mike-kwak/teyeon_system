@@ -534,7 +534,13 @@ def check_auth_and_log(page_name: str):
         
         st.divider()
         if st.button("로그아웃", use_container_width=True, key="sidebar_logout_btn"):
+            from core_logic.auth import get_manager
+            cookie_manager = get_manager()
+            cookie_manager.delete("teyeon_auth")
             st.session_state.clear()
+            st.toast("👋 로그아웃 되었습니다.")
+            import time
+            time.sleep(0.5) # 쿠키 삭제 반영 대기
             st.rerun()
     
     # 권한 체크
