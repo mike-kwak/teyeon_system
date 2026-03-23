@@ -3,7 +3,9 @@ import os
 from datetime import datetime
 import pandas as pd
 from db.supabase_client import get_kdk_session, update_kdk_session_status, update_kdk_match_score, check_auth_and_log, get_all_members
-from core_logic.kdk_engine import get_rankings_v3st.set_page_config(page_title="경기 진행 | TEYEON", page_icon="🎾", layout="wide")
+from core_logic.kdk_engine import get_rankings_v3
+
+st.set_page_config(page_title="경기 진행 | TEYEON", page_icon="🎾", layout="wide")
 
 # 권한 체크
 check_auth_and_log("03_경기진행.py")
