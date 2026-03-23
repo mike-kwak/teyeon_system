@@ -199,12 +199,27 @@ def update_kdk_session_status(session_id: str, status: str) -> dict:
 def upsert_kdk_matches(matches: list[dict]) -> list[dict]:
     """매치 목록 배치 upsert (id가 있으면 update, 없으면 insert)."""
     client = get_client()
-    res = (
-        client.table("kdk_matches")
-        .upsert(matches)
-        .execute()
-    )
-    return res.data or []
+    try:
+        res = (
+            client.table("kdk_matches")
+            .upsert(matches)
+            .execute()
+        )
+        return res.data or []
+    except Exception as e:
+        # kdk_matches 테이블에 'group' 컬럼 등 새 필드가 없을 경우를 대비한 폴백 처리
+        fallback_matches = []
+        for m in matches:
+            fm = dict(m)
+            fm.pop("group", None) # DB 컬럼이 없을 것으로 예상되는 키 제거
+            fallback_matches.append(fm)
+        
+        res = (
+            client.table("kdk_matches")
+            .upsert(fallback_matches)
+            .execute()
+        )
+        return res.data or []
 
 
 def update_kdk_match_score(match_id: str, score1: int, score2: int, status: str = "complete") -> dict:
