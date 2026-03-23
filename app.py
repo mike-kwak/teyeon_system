@@ -497,128 +497,8 @@ def _render_home(user: dict, role: str):
     def can_access(min_role):
         return ROLE_LEVEL.get(role, 1) >= ROLE_LEVEL.get(min_role, 2)
 
-    # ── CSS ──
-    st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
-.at-profile-card {
-    display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(135deg, rgba(26,37,61,0.95), rgba(10,14,26,0.98));
-    border: 1px solid rgba(204,255,0,0.22); border-radius: 20px;
-    padding: 16px 18px; margin-bottom: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
-}
-.at-profile-info { display: flex; align-items: center; gap: 14px; }
-.at-avatar {
-    width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
-    border: 2px solid #CCFF00;
-}
-.at-avatar-init {
-    width: 54px; height: 54px; border-radius: 50%;
-    background: linear-gradient(135deg,#1a253d,#CCFF00 200%);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 20px; color: #0A0E1A;
-    border: 2px solid #CCFF00;
-}
-.at-name {
-    font-family: 'Outfit',sans-serif; font-weight: 900;
-    font-size: 1.15rem; color: #fff; line-height: 1.2;
-}
-.at-badge {
-    display: inline-block; font-size: 0.72rem; font-weight: 700;
-    padding: 2px 10px; border-radius: 30px; margin-top: 4px; border: 1px solid;
-    background: rgba(255,255,255,0.05);
-}
-.at-ceo-btn {
-    background: linear-gradient(135deg,#CCFF00,#a8d400);
-    color: #0A0E1A !important; font-weight: 900 !important;
-    font-size: 0.78rem !important; border: none !important;
-    border-radius: 14px !important; padding: 8px 14px !important;
-    cursor: pointer; white-space: nowrap; text-decoration: none;
-    box-shadow: 0 4px 16px rgba(204,255,0,0.35);
-}
-.at-grid-title {
-    font-family: 'Outfit',sans-serif; font-size: 0.75rem; font-weight: 700;
-    color: #aab8d4; letter-spacing: 1.5px; text-transform: uppercase;
-    margin-bottom: 12px;
-}
-/* 아이콘 그리드 버튼 스타일 */
-.icon-btn > div.stButton > button {
-    width: 100% !important;
-    aspect-ratio: 1 / 1.05 !important;
-    min-height: auto !important;
-    border-radius: 20px !important;
-    background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
-    color: #e2e8f0 !important;
-    font-family: 'Outfit', sans-serif !important;
-    font-size: 0.8rem !important; font-weight: 800 !important;
-    line-height: 1.3 !important; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    padding: 18px 6px !important; white-space: pre-line !important;
-    box-shadow: 4px 4px 12px rgba(0,0,0,0.3), -2px -2px 10px rgba(255,255,255,0.02) !important;
-    display: flex !important; flex-direction: column !important;
-    align-items: center !important; justify-content: center !important;
-}
-.icon-btn > div.stButton > button:hover {
-    background: linear-gradient(145deg, rgba(45,55,80,0.95), rgba(25,35,55,0.98)) !important;
-    border-color: rgba(204,255,0,0.5) !important;
-    transform: translateY(-4px) scale(1.03);
-    box-shadow: 0 10px 25px rgba(204,255,0,0.2) !important;
-    color: #fff !important;
-}
-.icon-btn > div.stButton > button p { margin: 0 !important; }
-.icon-btn > div.stButton > button p::first-line {
-    font-size: 3.2rem !important;
-    line-height: 1.2 !important;
-}
-
-.icon-btn-locked > div.stButton > button {
-    opacity: 0.5 !important; cursor: not-allowed !important; filter: grayscale(0.5);
-}
-.icon-btn-locked > div.stButton > button:hover {
-    transform: none !important; background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
-    border-color: rgba(255,255,255,0.06) !important; box-shadow: 4px 4px 12px rgba(0,0,0,0.3) !important;
-}
-.icon-btn-coming > div.stButton > button {
-    opacity: 0.4 !important; cursor: default !important;
-}
-.icon-btn-coming > div.stButton > button:hover { transform: none !important; }
-
-/* ── 완벽 반응형(Responsive Fluid) 그리드: Z폴드/태블릿/다양한 해상도 완벽 대응 ── */
-div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 12px !important;
-    width: 100% !important;
-}
-
-/* 기본 상태 (Z폴드 접힌 화면이나 좁은 스마트폰): 2열 자동 꽉 채우기 & 글자 잘림 방지 */
-div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) > div[data-testid="column"] {
-    flex: 1 1 calc(50% - 10px) !important; 
-    min-width: 120px !important; /* 화면이 아무리 좁아져도 아이콘 텍스트 유지 */
-    width: auto !important;
-}
-
-/* 중간 너비 이상의 화면 (Z폴드 펼침, 넓은 폰 가로모드, 태블릿): 부드럽게 3열로 자동 재배치 */
-@media (min-width: 480px) {
-    div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) > div[data-testid="column"] {
-        flex: 1 1 calc(33.333% - 10px) !important;
-    }
-}
-
-/* 스코어 입력창 가로 정렬 강제 */
-div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 10px !important;
-}
-div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="column"] {
-    width: auto !important;
-    flex: 1 !important;
-}
-</style>
+    # ── Action Tower ──
+    st.markdown('<div class="at-grid-layout">', unsafe_allow_html=True)
 """, unsafe_allow_html=True)
 
     # ── 프로필 카드 ──
@@ -640,7 +520,7 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
     </div>
     {ceo_btn}
 </div>
-<div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">⚡ Action Tower</div>
+<div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">⚡ 빠른 이동</div>
 """, unsafe_allow_html=True)
 
     # ── 완벽 반응형(Fluid) 3열 아이콘 그리드 ──
