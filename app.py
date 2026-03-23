@@ -501,7 +501,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.0</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.1</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
@@ -529,12 +529,7 @@ def _render_home(user: dict, role: str):
             url = f"/?nav={item['id']}"
             badge = ""
 
-        grid_html += f"""
-        <a href="{url}" class="at-tile {state_class}" target="_self">
-            <div class="at-tile-icon">{item['icon']}</div>
-            <div class="at-tile-label">{item['label']} <span class="at-tile-badge">{badge}</span></div>
-        </a>
-        """
+        grid_html += f"""<a href="{url}" class="at-tile {state_class}" target="_self"><div class="at-tile-icon">{item['icon']}</div><div class="at-tile-label">{item['label']} <span class="at-tile-badge">{badge}</span></div></a>"""
     grid_html += '</div>'
     
     st.markdown(grid_html, unsafe_allow_html=True)
