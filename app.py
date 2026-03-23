@@ -468,12 +468,12 @@ ROLE_LABELS = {
     "Guest":  ("🔓 게스트",     "#aab8d4"),
 }
 HOME_MENU = [
-    dict(icon="👤", label="멤버 정보",   page="pages/07_멤버정보.py",  min_role="Member", coming_soon=False),
-    dict(icon="🎾", label="KDK 대진표",  page="pages/02_대진생성.py",  min_role="Staff",  coming_soon=False),
-    dict(icon="🏆", label="실시간 랭킹",  page="pages/05_랭킹.py",      min_role="Member", coming_soon=False),
-    dict(icon="💰", label="상벌금 현황",  page="pages/04_재무.py",      min_role="Member", coming_soon=False),
-    dict(icon="🏅", label="대회 모드",    page=None,                    min_role="Member", coming_soon=True),
-    dict(icon="💬", label="재무",         page="pages/04_재무.py",      min_role="Member", coming_soon=False),
+    dict(id="members",    icon="👤", label="멤버 정보",   page="pages/07_멤버정보.py",  min_role="Member", coming_soon=False),
+    dict(id="kdk",        icon="🎾", label="KDK 대진표",  page="pages/02_대진생성.py",  min_role="Staff",  coming_soon=False),
+    dict(id="ranking",    icon="🏆", label="실시간 랭킹", page="pages/05_랭킹.py",      min_role="Member", coming_soon=False),
+    dict(id="finance",    icon="💰", label="상벌금 현황", page="pages/04_재무.py",      min_role="Member", coming_soon=False),
+    dict(id="tournament", icon="🏅", label="대회 모드",   page=None,                   min_role="Member", coming_soon=True),
+    dict(id="community",  icon="💬", label="커뮤니티",    page="pages/04_재무.py",      min_role="Member", coming_soon=False),
 ]
 
 def _render_home(user: dict, role: str):
