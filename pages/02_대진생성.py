@@ -9,8 +9,9 @@ st.set_page_config(page_title="대진 생성 | TEYEON", page_icon="⚙️", layo
 # ── 권한 체크 및 로그 기록 & 사이드바 ──
 check_auth_and_log("02_대진생성.py")
 
+st.markdown("""
+<style>
 /* v19.0: 제로-지연 고스트 체크박스 그리드 */
-/* 체크박스를 버튼처럼 위장하여 st.rerun 없이도 즉각적인 반응성을 제공함 */
 
 /* 1. 모바일 3열 유지 및 컨테이너 설정 */
 div.element-container:has(div[data-testid="stCheckbox"]) {
