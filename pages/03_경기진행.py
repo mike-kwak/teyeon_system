@@ -71,6 +71,14 @@ st.markdown("""
     font-size: 1.2rem !important; font-weight: 800; color: #fff;
     white-space: nowrap; margin-bottom: 15px !important;
 }
+.main-pg-title {
+    font-size: 1.5rem !important; font-weight: 800; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 20px !important;
+}
+.main-pg-title span.status-confirmed {
+    font-size: 0.9rem !important; margin-left: 8px; vertical-align: middle;
+}
 
 /* 저장 버튼 글자색 검정색 강제 (v7.1) */
 div.stButton > button[kind="primary"] {
@@ -99,7 +107,7 @@ else:
     title = data.get("title") or "현재 대진표 (미저장)"
 
 status_tag = '<span class="status-draft">임시 저장</span>' if status == "draft" else '<span class="status-confirmed">확정</span>'
-st.markdown(f"## 📝 {title} {status_tag}", unsafe_allow_html=True)
+st.markdown(f'<div class="main-pg-title">📝 {title} {status_tag}</div>', unsafe_allow_html=True)
 
 rules = data.get("match_rules") or "(모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승...)"
 st.markdown(f'<div class="rules-box"><b>📏 경기 규칙:</b> {rules}</div>', unsafe_allow_html=True)
