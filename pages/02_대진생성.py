@@ -11,13 +11,46 @@ check_auth_and_log("02_대진생성.py")
 
 st.markdown('''
 <style>
-/* v22.0: 3열 네온그린 위장 체크박스 */
-div.element-container:has(div[data-testid="stCheckbox"]) {
-    display: inline-block !important;
-    width: 31% !important;
-    margin: 1% !important;
-    vertical-align: top !important;
+/* 모바일 환경에서 st.columns가 1열로 챌기는 것 절대 방어 */
+@media (max-width: 768px) {
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+        width: 32% !important;
+        flex: 1 1 32% !important;
+        min-width: 32% !important;
+        padding: 0 2px !important;
+    }
 }
+
+/* 체크박스를 네온그린 3열 버튼으로 위장 */
+div[data-testid="stCheckbox"] input[type="checkbox"] { display: none !important; }
+div[data-testid="stCheckbox"] div[data-baseweb="checkbox"] > div { display: none !important; }
+div[data-testid="stCheckbox"] label {
+    background-color: #1E1E2E !important;
+    border: 1px solid #4a4a6a !important;
+    border-radius: 8px !important;
+    padding: 10px 0px !important;
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    cursor: pointer !important;
+    min-height: 42px !important;
+    align-items: center !important;
+}
+div[data-testid="stCheckbox"] label p { color: white !important; font-size: 14px !important; margin: 0 !important; }
+div[data-testid="stCheckbox"] label[data-checked="true"] {
+    background-color: #39FF14 !important;
+    border-color: #39FF14 !important;
+}
+div[data-testid="stCheckbox"] label[data-checked="true"] p { color: black !important; font-weight: bold !important; }
+div[data-testid="stCheckbox"] label:has(input:checked) { background-color: #39FF14 !important; border-color: #39FF14 !important; }
+div[data-testid="stCheckbox"] label:has(input:checked) p { color: black !important; font-weight: bold !important; }
+.section-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
+</style>
+''', unsafe_allow_html=True)
 div[data-testid="stCheckbox"] input[type="checkbox"] { display: none !important; }
 div[data-testid="stCheckbox"] div[data-baseweb="checkbox"] > div { display: none !important; }
 div[data-testid="stCheckbox"] label {
@@ -92,12 +125,14 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
 
-    # v22.0: 시제 3열 CSS가 열어주는 평면 체크박스 나열
-    for m in filtered:
+    # v23.0: st.columns(3) + 모바일 Flex 방어막으로 완벽 3열
+    cols = st.columns(3)
+    for i, m in enumerate(filtered):
         m_id = m.get("id")
         m_name = m.get("nickname", "이름없음")
         is_pre_selected = m_id in st.session_state.selected_members
-        st.checkbox(m_name, key=f"att_{m_id}", value=is_pre_selected, label_visibility="visible")
+        with cols[i % 3]:
+            st.checkbox(m_name, key=f"att_{m_id}", value=is_pre_selected, label_visibility="visible")
 
     # 선택된 인원 집계
     current_selected = []
@@ -112,7 +147,7 @@ with col_left:
                 st.session_state.player_groups[m_name] = "A"
     st.session_state.selected_members = current_selected
 
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_btn_v22"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_btn_v23"):
         for m in members: st.session_state[f"att_{m.get('id')}"] = False
         st.session_state.selected_members = []
         st.session_state.player_times = {}
