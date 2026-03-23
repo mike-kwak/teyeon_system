@@ -9,7 +9,10 @@ st.set_page_config(page_title="대진 생성 | TEYEON", page_icon="⚙️", layo
 # ── 권한 체크 및 로그 기록 & 사이드바 ──
 check_auth_and_log("02_대진생성.py")
 
-    .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
+st.markdown("""
+<style>
+.section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
+.stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
 
 /* v16.0: 궁극의 격리형 3열 그리드 (Sibling Sledgehammer) */
 /* 에러와 깨짐을 방지하기 위해 가장 기본적이고 강력한 선택자 사용 */
