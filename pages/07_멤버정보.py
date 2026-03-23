@@ -181,6 +181,19 @@ def get_sort_priority(m):
 
 members.sort(key=get_sort_priority)
 
+# ── v5.4 진단 모드 (운영진 전용) ──────────────────────────────────────────────────
+is_ceo_or_staff = st.session_state.get("user_role") in ["CEO", "Staff"]
+if is_ceo_or_staff:
+    with st.expander("🛠️ 시스템 진단 (운영진 전용)"):
+        st.write(f"현재 작업 디렉토리 (CWD): `{os.getcwd()}`")
+        for d in SEARCH_DIRS:
+            exists = os.path.exists(d)
+            color = "green" if exists else "red"
+            st.markdown(f"경로: `:{color}[{d}]` (존재: {exists})")
+            if exists:
+                files = os.listdir(d)
+                st.write(f"  - 파일 목록 ({len(files)}개): {files[:10]}...")
+
 st.markdown("## 👥 멤버 정보")
 search_query = st.text_input("", placeholder="🔍 이름을 검색하세요...", label_visibility="collapsed")
 filtered = [m for m in members if search_query.lower() in m.get("nickname", "").lower()] if search_query else members
