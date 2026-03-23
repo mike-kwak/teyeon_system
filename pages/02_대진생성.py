@@ -117,24 +117,21 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    # v8.5: 무적의 3열 우회법 - columns를 쓰지 않고 Flexbox로 직접 배치
-    st.markdown('<div class="attendance-flex-area">', unsafe_allow_html=True)
-    with st.container():
-        for i, m in enumerate(filtered):
-            m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
-            display_name = f"{m_name}"
-            if st.session_state.use_group_division:
-                 display_name += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
-            
-            if st.checkbox(display_name, value=m_id in st.session_state.selected_members, key=f"mem_{m_id}"):
-                if m_id not in st.session_state.selected_members: st.session_state.selected_members.append(m_id)
-                if m_name not in st.session_state.player_times: st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
-                if m_name not in st.session_state.player_groups: st.session_state.player_groups[m_name] = "A"
-            else:
-                if m_id in st.session_state.selected_members:
-                    st.session_state.selected_members.remove(m_id)
-                    st.session_state.player_times.pop(m_name, None); st.session_state.player_groups.pop(m_name, None)
-    st.markdown('</div>', unsafe_allow_html=True)
+    # v8.6: 무적의 3열 우회법 - 사용자 요청 CSS 전용 플랫 리스트
+    for i, m in enumerate(filtered):
+        m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
+        display_name = f"{m_name}"
+        if st.session_state.use_group_division:
+             display_name += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
+        
+        if st.checkbox(display_name, value=m_id in st.session_state.selected_members, key=f"mem_{m_id}"):
+            if m_id not in st.session_state.selected_members: st.session_state.selected_members.append(m_id)
+            if m_name not in st.session_state.player_times: st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
+            if m_name not in st.session_state.player_groups: st.session_state.player_groups[m_name] = "A"
+        else:
+            if m_id in st.session_state.selected_members:
+                st.session_state.selected_members.remove(m_id)
+                st.session_state.player_times.pop(m_name, None); st.session_state.player_groups.pop(m_name, None)
     st.markdown('</div>', unsafe_allow_html=True) # section-card 닫기
 
 with col_right:
