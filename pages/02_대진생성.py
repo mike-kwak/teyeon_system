@@ -32,9 +32,30 @@ st.markdown("""
 .member-area div[data-testid="stSelectbox"] svg {
     display: none !important;
 }
-.section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
-div.stButton > button:first-child { background-color: #FEE500 !important; color: #000000 !important; font-weight: 800 !important; border: none !important; padding: 0.25rem 0.5rem; }
-</style>
+35: .section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
+36: div.stButton > button:first-child { background-color: #FEE500 !important; color: #000000 !important; font-weight: 800 !important; border: none !important; padding: 0.25rem 0.5rem; }
+37: 
+38: /* v7.9: 참석자 체크 3열 강제 (모바일) */
+39: @media (max-width: 768px) {
+40:     div[data-testid="stHorizontalBlock"]:has(.member-check-grid) {
+41:         display: flex !important;
+42:         flex-direction: row !important;
+43:         flex-wrap: wrap !important;
+44:         align-items: flex-start !important;
+45:         gap: 5px !important;
+46:     }
+47:     div[data-testid="stHorizontalBlock"]:has(.member-check-grid) > div {
+48:         flex: 1 1 30% !important;
+49:         width: 30% !important;
+50:         min-width: 0 !important;
+51:         margin-bottom: 5px !important;
+52:     }
+53:     div[data-testid="stHorizontalBlock"]:has(.member-check-grid) label {
+54:         font-size: 0.75rem !important; /* 모바일 글자 크기 축소 */
+55:         padding: 2px 0 !important;
+56:     }
+57: }
+58: </style>
 """, unsafe_allow_html=True)
 
 CLUB_ID = os.environ.get("CLUB_ID", "")
