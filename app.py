@@ -139,42 +139,66 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
 }
 
-/* 사이드바 프로필 */
-.sidebar-profile {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 18px;
-    padding: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* 💻 Action Tower & Grid System (Force 3-Column on Mobile) */
+.at-grid-layout [data-testid="stHorizontalBlock"] {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
 }
+.at-grid-layout [data-testid="column"] {
+    flex: 1 1 calc(33.333% - 8px) !important;
+    min-width: 90px !important;
+    width: auto !important;
+}
+.icon-btn > div.stButton > button {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 24px !important;
+    background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
+    border: 1px solid rgba(254,255,0,0.15) !important;
+    color: #ffffff !important;
+    font-size: 0.8rem !important; font-weight: 800 !important;
+    display: flex !important; flex-direction: column !important;
+    align-items: center !important; justify-content: center !important;
+    padding: 10px !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+}
+.icon-btn > div.stButton > button:hover {
+    transform: translateY(-5px) !important;
+    border-color: #CCFF00 !important;
+    box-shadow: 0 10px 25px rgba(204,255,0,0.2) !important;
+}
+.icon-btn > div.stButton > button p { margin: 0 !important; line-height: 1.1 !important; }
+.icon-btn > div.stButton > button p::first-line { font-size: 2.8rem !important; }
 
-/* ── Action Tower 전용 (Dark Premium Style - Reverted from White) ── */
+/* ── Action Tower Profile Card (Dark Premium) ── */
 .at-profile-card {
     display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(135deg, rgba(26,37,61,0.95), rgba(10,14,26,0.98)) !important;
+    background: linear-gradient(135deg, rgba(26,37,61,0.98), rgba(10,14,26,1)) !important;
     border: 1px solid rgba(204,255,0,0.3) !important;
     border-radius: 24px !important;
     padding: 18px 20px !important;
     margin-bottom: 25px !important;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.4) !important;
+    box-shadow: 0 12px 50px rgba(0,0,0,0.5) !important;
 }
-.at-profile-info { display: flex; align-items: center; gap: 16px; }
+.at-profile-info { display: flex; align-items: center; gap: 15px; }
 .at-avatar {
-    width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
+    width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
     border: 2px solid #CCFF00;
 }
 .at-avatar-init {
-    width: 54px; height: 54px; border-radius: 50%;
+    width: 52px; height: 52px; border-radius: 50%;
     background: linear-gradient(135deg,#1a253d,#CCFF00 200%);
     display: flex; align-items: center; justify-content: center;
     font-weight: 900; font-size: 20px; color: #0A0E1A;
     border: 2px solid #CCFF00;
 }
-.at-name {
-    font-family: 'Outfit',sans-serif; font-weight: 900;
-    font-size: 1.15rem; color: #fff !important; line-height: 1.2;
-}
+.at-name { font-weight: 900; font-size: 1.15rem; color: #fff !important; line-height: 1.2; }
 .at-badge {
-    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    display: inline-block; font-size: 0.7rem; font-weight: 700;
     padding: 2px 10px; border-radius: 30px; margin-top: 4px; border: 1px solid;
     background: rgba(255,255,255,0.05); color: #CCFF00; border-color: rgba(204,255,0,0.3);
 }
@@ -185,83 +209,6 @@ html, body, [class*="css"] {
     border-radius: 14px !important; padding: 10px 16px !important;
     cursor: pointer; white-space: nowrap; text-decoration: none;
     box-shadow: 0 4px 16px rgba(204,255,0,0.35);
-}
-
-/* ── 완벽 반응형(Responsive Fluid) 그리드: 3열 강제 ── */
-div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-    width: 100% !important;
-}
-
-/* 모바일에서도 3열 유지: flex-basis를 33.333% 근처로 설정 */
-div[data-testid="stHorizontalBlock"]:has(.icon-btn, .icon-btn-locked, .icon-btn-coming) > div[data-testid="column"] {
-    flex: 1 1 calc(33.333% - 8px) !important; 
-    min-width: 90px !important; /* 글자가 깨지지 않는 최소 너비 */
-    width: auto !important;
-}
-
-/* 타일 스타일 (Desired UI 이미지 2와 유사하게) */
-.icon-btn > div.stButton > button {
-    width: 100% !important;
-    aspect-ratio: 1 / 1 !important;
-    border-radius: 20px !important;
-    background: linear-gradient(145deg, rgba(35,45,70,0.9), rgba(20,28,48,0.95)) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    color: #ffffff !important;
-    font-size: 0.8rem !important; font-weight: 800 !important;
-    display: flex !important; flex-direction: column !important;
-    align-items: center !important; justify-content: center !important;
-    padding: 10px !important;
-}
-.icon-btn > div.stButton > button p {
-    margin: 0 !important; line-height: 1.2 !important;
-}
-.icon-btn > div.stButton > button p::first-line {
-    font-size: 2.5rem !important; /* 이모지 크기 살짝 조정 */
-}
-
-/* 기능 카드 (Landing) */
-.feature-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
-    padding: 20px;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
-}
-.feature-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: #CCFF00;
-    transform: translateX(10px);
-}
-.sidebar-profile img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #FEE500;
-}
-
-/* ── 데스크톱에서 사이드바 숨기기 버튼 제거 (항상 펼쳐진 상태 유지) ── */
-@media (min-width: 768px) {
-    [data-testid="collapsedControl"] { display: none !important; }
-    button[data-testid="baseButton-headerNoPadding"] { display: none !important; }
-    section[data-testid="stSidebar"] > div:first-child { min-width: 250px !important; }
-}
-
-/* 스코어 입력창 가로 정렬 강제 */
-div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 10px !important;
-}
-div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="column"] {
-    width: auto !important;
-    flex: 1 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -514,7 +461,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">⭐ {nickname} 님 안녕하세요!</div>
+            <div class="at-name">⭐ {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v2.1</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
