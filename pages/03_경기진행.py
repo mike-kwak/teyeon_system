@@ -172,22 +172,33 @@ with main_tabs[0]:
             ''', unsafe_allow_html=True)
         
             c_p2, c_m2 = st.columns(2)
-            with c_p2: st.button("➕", key="s2p", on_click=change_s, args=(2, 1), use_container_width=True)
             with c_m2: st.button("➖", key="s2m", on_click=change_s, args=(2,-1), use_container_width=True)
     
-        # v7.3 햅틱 피드백 (모바일 진동)
-        if st.session_state.get("vibrate_trigger"):
-            import streamlit.components.v1 as components
-            components.html("""
-                <script>
-                if (window.navigator && window.navigator.vibrate) {
-                    window.navigator.vibrate(30);
-                } else if (window.parent.navigator && window.parent.navigator.vibrate) {
-                    window.parent.navigator.vibrate(30);
-                }
-                </script>
-            """, height=0)
-            st.session_state.vibrate_trigger = False
+        # v7.4 햅틱 피드백 (강력한 주입 시도)
+        import streamlit.components.v1 as components
+        components.html("""
+            <script>
+            function doVibrate() {
+                try {
+                    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(30);
+                    if (window.parent && window.parent.navigator && window.parent.navigator.vibrate) window.parent.navigator.vibrate(30);
+                } catch (e) {}
+            }
+            
+            // 더 강력한 방법: 부모 창의 버튼들에 직접 리스너 주입 시도
+            setTimeout(() => {
+                const btns = window.parent.document.querySelectorAll('button');
+                btns.forEach(btn => {
+                    if (btn.innerText.indexOf('➕') !== -1 || btn.innerText.indexOf('➖') !== -1) {
+                        if (!btn.hasAttribute('data-haptic')) {
+                            btn.addEventListener('click', doVibrate);
+                            btn.setAttribute('data-haptic', 'true');
+                        }
+                    }
+                });
+            }, 500);
+            </script>
+        """, height=0)
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         if st.button("💾 점수 저장 및 복귀", type="primary", use_container_width=True):
