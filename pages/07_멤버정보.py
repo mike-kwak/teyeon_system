@@ -10,13 +10,15 @@ check_auth_and_log("07_멤버정보.py")
 
 # 로컬 이미지 표시를 위한 함수 (Storage 업로드 실패 대비)
 def get_local_img_base64(path):
-    if os.path.exists(path):
+    if path and os.path.exists(path):
         with open(path, "rb") as f:
             data = f.read()
             return base64.b64encode(data).decode()
     return None
 
-/* v5.0 모바일 3열 그리드 강제 적용 */
+st.markdown("""
+<style>
+/* v5.1 모바일 3열 그리드 강제 적용 */
 @media (max-width: 768px) {
     [data-testid="stHorizontalBlock"] {
         display: flex !important;
@@ -52,10 +54,9 @@ def get_local_img_base64(path):
 
 .member-card { 
     background: rgba(255, 255, 255, 0.07); 
-... (unchanged) ...
     border-radius: 20px; 
     border: 1px solid rgba(255, 255, 255, 0.1); 
-    padding: 28px; /* 패딩 추가 확대 */
+    padding: 28px;
     margin-bottom: 25px;
     display: flex;
     flex-direction: column;
@@ -63,7 +64,7 @@ def get_local_img_base64(path):
 .member-header {
     display: flex;
     align-items: center; 
-    margin-bottom: 35px; /* 헤더와 아래 섹션 간격 대폭 확보 */
+    margin-bottom: 35px;
     padding-bottom: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
@@ -77,10 +78,10 @@ def get_local_img_base64(path):
     align-items: center; 
     justify-content: center; 
     font-size: 38px; 
-    margin-right: 20px; /* 여백 확대 */
+    margin-right: 20px;
     overflow: hidden;
     flex-shrink: 0;
-    border: 3px solid rgba(255, 255, 255, 0.1); /* 테두리 강조 */
+    border: 3px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
 }
 .profile-img-container img {
@@ -92,7 +93,7 @@ def get_local_img_base64(path):
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center; /* 가로 중앙 정렬 */
+    align-items: center;
     text-align: center;
 }
 .member-name { font-size: 1.5rem; font-weight: 800; color: #ffffff; margin-bottom: 6px; flex-shrink: 0; width: 100%; }
@@ -102,7 +103,6 @@ def get_local_img_base64(path):
     border-radius: 20px; 
     font-size: 0.85rem; 
     font-weight: 700; 
-    flex-shrink: 0;
 }
 .role-admin { background-color: #FEE500; color: #000000; }
 .role-member { background-color: #4a5568; color: #ffffff; }
@@ -111,7 +111,7 @@ def get_local_img_base64(path):
     background: rgba(0, 0, 0, 0.25); 
     border-radius: 12px; 
     padding: 15px; 
-    margin-top: 5px; /* 헤더와의 간격 유지 */
+    margin-top: 5px;
     height: auto; 
     display: flex;
     flex-direction: column;
@@ -124,9 +124,9 @@ def get_local_img_base64(path):
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* 최대 2줄만 표시 */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    min-height: 2.4em; /* 높이 일정하게 유지 */
+    min-height: 2.4em;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -168,7 +168,7 @@ filtered = [m for m in members if search_query.lower() in m.get("nickname", "").
 if not filtered:
     st.info("검색 결과가 없습니다.")
 else:
-    # ── v5.0 무적의 3열 그리드 루프 (행 단위 생성) ──
+    # ── v5.1 무적의 3열 그리드 루프 (행 단위 생성) ──
     rows = [filtered[i:i+3] for i in range(0, len(filtered), 3)]
     
     for row in rows:
@@ -184,9 +184,7 @@ else:
                 
                 # 프로필 이미지 처리
                 img_html = "🎾"
-                # 1. DB 이미지 URL
                 m_img = m.get("profile_image")
-                # 2. 로컬/상대경로 이미지 (우선순위)
                 found_path = find_member_image(nickname)
                 
                 b64_img = get_local_img_base64(found_path) if found_path else None
