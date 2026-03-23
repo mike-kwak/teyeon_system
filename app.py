@@ -483,7 +483,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         <div style="flex-shrink:0;">{profile_html}</div>
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v20.0</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v20.1</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>

@@ -13,12 +13,14 @@ st.markdown("""
 <style>
 /* v19.0: 제로-지연 고스트 체크박스 그리드 */
 
-/* 1. 모바일 3열 유지 및 컨테이너 설정 */
-div.element-container:has(div[data-testid="stCheckbox"]) {
-    display: inline-block !important;
-    width: 31% !important;
-    margin: 1% !important;
-    vertical-align: top !important;
+/* 1. 데스크탑 3열 설정 (모바일서는 1열 자동 복귀) */
+@media (min-width: 769px) {
+    div.element-container:has(div[data-testid="stCheckbox"]) {
+        display: inline-block !important;
+        width: 31% !important;
+        margin: 1% !important;
+        vertical-align: top !important;
+    }
 }
 
 /* 2. 원래 있던 기본 체크박스 네모 아이콘 무조건 숨기기 */
@@ -162,7 +164,7 @@ with col_left:
     # 동기화
     st.session_state.selected_members = current_selected
 
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v20"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v20_1"):
         for m in members: st.session_state[f"att_{m.get('id')}"] = False
         st.session_state.selected_members = []
         st.session_state.player_times = {}
