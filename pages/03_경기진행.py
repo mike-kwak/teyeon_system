@@ -14,16 +14,16 @@ check_auth_and_log("03_경기진행.py")
 # CSS: 가로형 스텝퍼 강제 및 UI 개선
 st.markdown("""
 <style>
-/* v7.0 Nuclear CSS: 모바일 강제 가로 50/50 레이아웃 (점수 입력 전용) */
+/* v7.7 Nuclear CSS: 모바일 강제 가로 50/50 레이아웃 (새 마커 기준) */
 @media (max-width: 768px) {
-    div[data-testid="stHorizontalBlock"]:has(.score-card-container) {
+    div[data-testid="stHorizontalBlock"]:has(.score-card-marker) {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: stretch !important;
         gap: 10px !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.score-card-container) > div {
+    div[data-testid="stHorizontalBlock"]:has(.score-card-marker) > div {
         flex: 1 1 50% !important;
         width: 50% !important;
         min-width: 0 !important;
