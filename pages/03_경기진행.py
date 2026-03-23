@@ -30,6 +30,7 @@ st.markdown("""
     }
     .kdk-score-number {
         font-size: 3.8rem !important; /* 모바일 대응 크기 조절 */
+        margin-bottom: 10px !important;
     }
 }
 
@@ -37,14 +38,27 @@ st.markdown("""
     background: linear-gradient(145deg, rgba(26,37,61,0.95), rgba(10,14,26,1));
     border: 1px solid rgba(204,255,0,0.3);
     border-radius: 28px;
-    padding: 20px 10px;
+    padding: 15px 10px;
     text-align: center;
     box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    height: 100%;
 }
 .vs-divider-premium {
     height: 100%; display: flex; align-items: center; justify-content: center;
     font-family: 'Oswald', sans-serif; font-weight: 900; color: #aab8d4;
     font-size: 1.4rem; font-style: italic; opacity: 0.5;
+    padding-top: 100px;
+}
+.inline-profile {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.inline-profile-list {
+    display: flex; flex-direction: row; justify-content: center; gap: 12px;
+}
+/* 저장 버튼 글자색 검정색 강제 (v7.1) */
+div.stButton > button[kind="primary"] {
+    color: #000000 !important;
+    font-weight: 800 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -108,11 +122,11 @@ with main_tabs[0]:
     
         with score_col1:
             st.markdown('<div class="score-card-container">', unsafe_allow_html=True)
-            p_htmls = [f'<div class="inline-profile" style="justify-content:center; margin-bottom:6px;">{get_member_photo_html(name, size=32, border=True)}</div><div style="font-size:0.9rem; font-weight:800; color:#fff;">{name}</div>' for name in m["team1"]]
+            p_htmls = [f'<div class="inline-profile">{get_member_photo_html(name, size=32, border=True)}<div style="font-size:0.75rem; font-weight:800; color:#fff;">{name}</div></div>' for name in m["team1"]]
             names_html1 = "".join(p_htmls)
             
             st.markdown(f'''
-                <div style="margin-bottom:15px;">{names_html1}</div>
+                <div class="inline-profile-list" style="margin-bottom:15px;">{names_html1}</div>
                 <div class="kdk-score-number-bg">
                     <div class="kdk-score-number">{st.session_state.s1_val}</div>
                 </div>
@@ -128,11 +142,11 @@ with main_tabs[0]:
 
         with score_col2:
             st.markdown('<div class="score-card-container">', unsafe_allow_html=True)
-            p_htmls = [f'<div class="inline-profile" style="justify-content:center; margin-bottom:6px;">{get_member_photo_html(name, size=32, border=True)}</div><div style="font-size:0.9rem; font-weight:800; color:#fff;">{name}</div>' for name in m["team2"]]
+            p_htmls = [f'<div class="inline-profile">{get_member_photo_html(name, size=32, border=True)}<div style="font-size:0.75rem; font-weight:800; color:#fff;">{name}</div></div>' for name in m["team2"]]
             names_html2 = "".join(p_htmls)
             
             st.markdown(f'''
-                <div style="margin-bottom:15px;">{names_html2}</div>
+                <div class="inline-profile-list" style="margin-bottom:15px;">{names_html2}</div>
                 <div class="kdk-score-number-bg">
                     <div class="kdk-score-number">{st.session_state.s2_val}</div>
                 </div>
