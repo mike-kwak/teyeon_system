@@ -10,10 +10,27 @@ st.set_page_config(page_title="대진 생성 | TEYEON", page_icon="⚙️", layo
 check_auth_and_log("02_대진생성.py")
 
 st.markdown("""
-<style>
-/* v19.0: 제로-지연 고스트 체크박스 그리드 */
+/* v21.0: 수술식 3열 정밀 타게팅 방어막 */
+@media (max-width: 768px) {
+    /* attendee-grid-wrapper 내부의 가로 블록만 멱살 잡기 */
+    div#attendee-grid-wrapper div[data-testid="stHorizontalBlock"] {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 5px !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+    }
+    
+    /* 폰트 크기 조정 및 텍스트 짤림 방지 */
+    div#attendee-grid-wrapper div[data-testid="stCheckbox"] label p {
+        font-size: 13px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+}
 
-/* 1. 데스크탑 3열 설정 (모바일서는 1열 자동 복귀) */
+/* 1. 데스크탑 3열 설정 */
 @media (min-width: 769px) {
     div.element-container:has(div[data-testid="stCheckbox"]) {
         display: inline-block !important;
