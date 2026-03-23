@@ -133,6 +133,7 @@ with main_tabs[0]:
         def change_s(side, delta):
             if side == 1: st.session_state.s1_val = max(0, st.session_state.s1_val + delta)
             else: st.session_state.s2_val = max(0, st.session_state.s2_val + delta)
+            st.session_state.vibrate_trigger = True # v7.3 햅틱 트리거
 
         # ── 가로형 프리미엄 점수 카드 (v7.0) ──
         score_col1, vs_col, score_col2 = st.columns([1, 0.2, 1])
@@ -171,9 +172,22 @@ with main_tabs[0]:
             ''', unsafe_allow_html=True)
         
             c_p2, c_m2 = st.columns(2)
-            with c_p2: st.button("➕", key="s2p", on_click=change_s, args=(2, 1), use_container_width=True)
             with c_m2: st.button("➖", key="s2m", on_click=change_s, args=(2,-1), use_container_width=True)
     
+        # v7.3 햅틱 피드백 (모바일 진동)
+        if st.session_state.get("vibrate_trigger"):
+            import streamlit.components.v1 as components
+            components.html("""
+                <script>
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(30);
+                } else if (window.parent.navigator && window.parent.navigator.vibrate) {
+                    window.parent.navigator.vibrate(30);
+                }
+                </script>
+            """, height=0)
+            st.session_state.vibrate_trigger = False
+
         st.markdown("<br><br>", unsafe_allow_html=True)
         if st.button("💾 점수 저장 및 복귀", type="primary", use_container_width=True):
             m['score1'], m['score2'], m['status'] = st.session_state.s1_val, st.session_state.s2_val, "complete"
