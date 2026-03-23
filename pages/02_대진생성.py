@@ -191,7 +191,9 @@ with col_right:
                 players.append({"name": n, "group": st.session_state.player_groups.get(n, "A"), "times": st.session_state.player_times.get(n, [st.session_state.global_start, st.session_state.global_end]), "is_guest": n in st.session_state.guests})
             matches = generate_kdk_matches_v3(players, court_map, target_matches, concept=concept, fixed_partners=st.session_state.fixed_partners, fixed_partner_games=st.session_state.fixed_partner_games)
             award_config = {"reward_1st": st.session_state.reward_1st, "fine_25": st.session_state.fine_25, "fine_last_25": st.session_state.fine_last_25}
-            new_session = create_kdk_session(CLUB_ID, datetime.now().strftime("%Y-%m-%d"), st.session_state.get("user", {}).get("nickname", "Admin"), note=f"{concept} | {session_title}", award_config=award_config, title=session_title)
+            c_id = CLUB_ID if CLUB_ID else None
+            creator_id = st.session_state.get("user", {}).get("id")
+            new_session = create_kdk_session(c_id, datetime.now().strftime("%Y-%m-%d"), creator_id, note=f"{concept} | {session_title}", award_config=award_config, title=session_title)
             if new_session:
                 db_matches = [{"session_id": new_session["id"], "group": m["group"], "round": m["round"], "court": m["court"], "team1": m["team1"], "team2": m["team2"], "score1": 0, "score2": 0, "status": "pending"} for m in matches]
                 upsert_kdk_matches(db_matches)
