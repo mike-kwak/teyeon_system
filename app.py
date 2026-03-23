@@ -163,40 +163,36 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
 }
 
-/* ── v3.7 무적의 NON-STACKING 컬럼 시스템 ── */
-[data-testid="stHorizontalBlock"] {
-    display: flex !important;
-    flex-direction: row !important; /* Force Horizontal! */
-    flex-wrap: nowrap !important;
-    gap: 8px !important;
-}
-[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-    width: 33.33% !important;
-    flex: 1 1 33.33% !important;
-    min-width: 0 !important;
+/* ── v4.0 GLOBAL MOBILE STACKING PREVENTION (DEFINITIVE) ── */
+@media (max-width: 768px) {
+    /* 모든 가로 블록은 무조건 가로(row) 유지 */
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+    }
+    /* 가로 블록 안의 각 컬럼은 공평하게 너비 배분 */
+    div[data-testid="stHorizontalBlock"] > div {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+    }
 }
 
-/* 버튼 타일 디자인 (v3.7) */
+/* 버튼 타일 디자인 (v4.0) */
 .icon-btn > div.stButton > button {
     width: 100% !important;
     aspect-ratio: 1 / 1 !important;
-    border-radius: 20px !important;
+    border-radius: 18px !important;
     background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
     border: 1px solid rgba(254,255,0,0.15) !important;
     color: #ffffff !important;
-    font-size: 0.75rem !important; font-weight: 800 !important;
+    font-size: 0.72rem !important; font-weight: 800 !important;
     display: flex !important; flex-direction: column !important;
     align-items: center !important; justify-content: center !important;
-    padding: 10px 5px !important;
+    padding: 8px 4px !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
 }
-.icon-btn > div.stButton > button:hover {
-    transform: translateY(-3px) !important;
-    border-color: #CCFF00 !important;
-}
-.icon-btn > div.stButton > button p { margin: 0 !important; line-height: 1.1 !important; }
-.icon-btn > div.stButton > button p::first-line { font-size: 2.2rem !important; }
+.icon-btn > div.stButton > button p::first-line { font-size: 2.1rem !important; }
 
 /* ── Action Tower Profile Card (Dark Premium) ── */
 .at-profile-card {
@@ -509,7 +505,7 @@ def _render_home(user: dict, role: str):
 </div>
 <div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">\u26a1 \ube60\ub978 \uc774\ub3d9</div>
 """, unsafe_allow_html=True)
-    # ── v3.7 무적의 NON-STACKING 3열 컬럼 ──
+    # ── v4.0 무적의 NON-STACKING 3열 컬럼 ──
     rows = [HOME_MENU[i:i+3] for i in range(0, len(HOME_MENU), 3)]
     for row in rows:
         cols = st.columns(3)
@@ -530,7 +526,7 @@ def _render_home(user: dict, role: str):
             btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
             with col:
                 st.markdown(f'<div class="{btn_class}">', unsafe_allow_html=True)
-                if st.button(btn_label, key=f"home_v37_{item['id']}", use_container_width=True):
+                if st.button(btn_label, key=f"home_v40_{item['id']}", use_container_width=True):
                     if coming:
                         st.toast("🚧 준비 중입니다.")
                     elif locked:
