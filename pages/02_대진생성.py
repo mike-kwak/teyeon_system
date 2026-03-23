@@ -11,6 +11,34 @@ check_auth_and_log("02_대진생성.py")
 
 st.markdown("""
 <style>
+/* 모바일 환경 (화면 너비 768px 이하) 3열 강제 유지 */
+@media (max-width: 768px) {
+    /* st.columns를 사용했을 경우 방어 */
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+        width: 31% !important;
+        flex: 1 1 31% !important;
+        min-width: 31% !important;
+    }
+    /* 버튼을 그냥 나열했을 경우 방어 */
+    div.element-container:has(button) {
+        display: inline-block !important;
+        width: 31% !important;
+        margin: 1% !important;
+    }
+    /* 모바일 버튼 글자 짤림 방지 */
+    button p {
+        font-size: 13px !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
 .section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
 .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
 
