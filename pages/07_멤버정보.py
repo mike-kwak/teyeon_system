@@ -8,13 +8,7 @@ st.set_page_config(page_title="멤버 정보 | TEYEON", page_icon="👥", layout
 # ── 권한 체크 및 로그 기록 ────────────────────────────────────────────────────────
 check_auth_and_log("07_멤버정보.py")
 
-# 로컬 이미지 표시를 위한 함수 (Storage 업로드 실패 대비)
-def get_local_img_base64(path):
-    if path and os.path.exists(path):
-        with open(path, "rb") as f:
-            data = f.read()
-            return base64.b64encode(data).decode()
-    return None
+from core_logic.utils import get_local_img_base64, find_member_image_path, get_member_photo_html, get_member_official_role
 
 st.markdown("""
 <style>
@@ -141,38 +135,7 @@ CLUB_ID = os.environ.get("CLUB_ID", "")
 members = get_all_members(CLUB_ID)
 
 # ── 운영진 및 프로필 설정 ───────────────────────────────────────────────────
-ADMIN_MAP = {"박광현": "회장", "강정호": "부회장", "정상윤": "총무", "곽민섭": "재무이사", "김민준": "경기이사", "남인우": "섭외이사"}
-
-# 사진 경로: 다양한 상대경로 및 절대경로 탐색 (v5.3 - 더욱 강력해진 탐색)
-SEARCH_DIRS = [
-    "member_pics",                    # ./member_pics
-    "teyeon_system/member_pics",      # ./teyeon_system/member_pics
-    "../member_pics",                  # ../member_pics (현재 스크린샷 구조)
-    "../Teyeon pic",                   # ../Teyeon pic
-    "Teyeon pic",                     # ./Teyeon pic
-    "teyeon_system/Teyeon pic",
-    os.path.join(os.getcwd(), "member_pics"),
-    "c:/Users/섭이/Desktop/AI/1. Teyeon/Teyeon pic",
-    "c:/Users/섭이/Desktop/AI/1. Teyeon/member_pics"
-]
-
-def find_member_image(nickname):
-    """다양한 경로와 확장자에서 멤버 이미지를 찾음"""
-    exts = [".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"]
-    
-    # 닉네임 공백 제거
-    name = nickname.strip()
-    
-    for d in SEARCH_DIRS:
-        if not os.path.exists(d): continue
-        for ext in exts:
-            # 다양한 조합 시도 (이름_사진.png 형식이 있을 수도 있음 대비)
-            possible_names = [name, name.replace(" ", ""), name.replace("_", "")]
-            for pn in set(possible_names):
-                path = os.path.join(d, f"{pn}{ext}")
-                if os.path.exists(path):
-                    return path
-    return None
+# (core_logic.utils에서 통합 관리됨)
 
 def get_sort_priority(m):
     n = m.get("nickname", "").strip()
@@ -211,20 +174,12 @@ else:
                 nickname = m.get("nickname", "이름 없음").strip()
                 is_admin = m.get("is_admin", False)
                 
-                # 직책 결정
-                pos = ADMIN_MAP.get(nickname) or m.get("position") or ("회원")
-                role_class = "role-admin" if (is_admin or nickname in ADMIN_MAP) else "role-member"
+                # 직책 및 이미지 연동 (v6.0 Utility 사용)
+                pos = get_member_official_role(nickname, m.get("position"))
+                role_class = "role-admin" if pos in ["회장", "부회장", "총무", "재무이사", "경기이사", "섭외이사", "운영진"] else "role-member"
                 
                 # 프로필 이미지 처리
-                img_html = "🎾"
-                m_img = m.get("profile_image")
-                found_path = find_member_image(nickname)
-                
-                b64_img = get_local_img_base64(found_path) if found_path else None
-                if b64_img:
-                    img_html = f'<img src="data:image/png;base64,{b64_img}">'
-                elif m_img:
-                    img_html = f'<img src="{m_img}">'
+                img_html = get_member_photo_html(nickname, size=75, border=True)
                 
                 # 카드 HTML 구성
                 st.markdown(f"""

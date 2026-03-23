@@ -16,6 +16,7 @@ import extra_streamlit_components as stx
 
 from core_logic.auth import get_kakao_auth_url, exchange_code_for_token, get_kakao_user_info, logout
 from db.supabase_client import upsert_member, get_member_by_kakao_id, log_access, get_menu_permissions
+from core_logic.utils import get_member_photo_html, get_member_official_role
 
 load_dotenv()
 
@@ -493,20 +494,18 @@ def _render_home(user: dict, role: str):
     # ── Action Tower ──
     st.markdown('<div class="at-grid-layout">', unsafe_allow_html=True)
 
-    # ── 프로필 카드 ──
-    if profile_img:
-        avatar = f'<img class="at-avatar" src="{profile_img}">'
-    else:
-        avatar = f'<div class="at-avatar-init">{initials}</div>'
-
+    # v6.0 프로필 사진 연동 및 공식 직책 표시
+    profile_html = get_member_photo_html(nickname, size=52, border=True)
+    role_text = get_member_official_role(nickname, role_text)
+    
     ceo_btn = f'<a href="pages/09_CEO관리.py" class="at-ceo-btn">⚙️ 설정 마스터</a>' if role == "CEO" else ""
 
     st.markdown(f"""
 <div class="at-profile-card">
     <div class="at-profile-info">
-        {avatar}
+        <div style="flex-shrink:0;">{profile_html}</div>
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v5.5</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v6.0</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>

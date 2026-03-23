@@ -4,6 +4,7 @@ from datetime import datetime
 import pandas as pd
 from db.supabase_client import get_kdk_session, update_kdk_session_status, update_kdk_match_score, check_auth_and_log, get_all_members
 from core_logic.kdk_engine import get_rankings_v3, calculate_rewards_v2
+from core_logic.utils import get_member_photo_html
 
 st.set_page_config(page_title="경기 진행 | TEYEON", page_icon="🎾", layout="wide")
 
@@ -85,6 +86,12 @@ div[data-testid="column"]:has(.team-card-wrapper) div.stButton > button:active {
     background: rgba(204,255,0,0.2) !important;
     border-color: #CCFF00 !important;
 }
+.inline-profile {
+    display: flex; align-items: center; gap: 6px;
+}
+.inline-profile-list {
+    display: flex; flex-direction: column; gap: 4px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -147,12 +154,13 @@ with main_tabs[0]:
     
         with score_col1:
             st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
-            # 프로필 아이콘과 이름
-            names_html1 = "<br>".join(m["team1"])
+            # 프로필 아이콘과 이름 (v6.0)
+            p_htmls = [f'<div class="inline-profile">{get_member_photo_html(name, size=24, border=False)} <span>{name}</span></div>' for name in m["team1"]]
+            names_html1 = "".join(p_htmls)
+            
             st.markdown(f'''
             <div class="kdk-score-name">
-                <div style="font-size:2rem;margin-bottom:5px;">👤</div>
-                {names_html1}
+                <div class="inline-profile-list">{names_html1}</div>
             </div>
             <div class="kdk-score-number-bg">
                 <div class="kdk-score-number">{st.session_state.s1_val}</div>
@@ -168,11 +176,12 @@ with main_tabs[0]:
 
         with score_col2:
             st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
-            names_html2 = "<br>".join(m["team2"])
+            p_htmls = [f'<div class="inline-profile">{get_member_photo_html(name, size=24, border=False)} <span>{name}</span></div>' for name in m["team2"]]
+            names_html2 = "".join(p_htmls)
+            
             st.markdown(f'''
             <div class="kdk-score-name">
-                <div style="font-size:2rem;margin-bottom:5px;">🔴</div>
-                {names_html2}
+                <div class="inline-profile-list">{names_html2}</div>
             </div>
             <div class="kdk-score-number-bg">
                 <div class="kdk-score-number">{st.session_state.s2_val}</div>
@@ -196,12 +205,16 @@ with main_tabs[0]:
         for m in matches:
             idx = matches.index(m)
             score_text = f"{m['score1']} : {m['score2']}" if m["status"] == "complete" else "VS"
+            
+            t1_html = "".join([f'<div class="inline-profile" style="margin-bottom:2px;">{get_member_photo_html(n, size=20, border=False)} {n}</div>' for n in m['team1']])
+            t2_html = "".join([f'<div class="inline-profile" style="margin-bottom:2px; justify-content:flex-end;">{n} {get_member_photo_html(n, size=20, border=False)}</div>' for n in m['team2']])
+            
             st.markdown(f"""
             <div class="match-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1; text-align:left; font-weight:800; font-size:1.1rem;">{' & '.join(m['team1'])}</div>
+                    <div style="flex:1; text-align:left; font-weight:800; font-size:0.95rem;">{t1_html}</div>
                     <div style="flex:0.5; text-align:center; font-weight:900; font-size:1.2rem; color:#CCFF00;">{score_text}</div>
-                    <div style="flex:1; text-align:right; font-weight:800; font-size:1.1rem;">{' & '.join(m['team2'])}</div>
+                    <div style="flex:1; text-align:right; font-weight:800; font-size:0.95rem;">{t2_html}</div>
                 </div>
                 <div style="font-size:0.8rem; color:#aab8d4; text-align:center; margin-top:8px;">코트 {m['court']} | 라운드 {m['round']}</div>
             </div>
