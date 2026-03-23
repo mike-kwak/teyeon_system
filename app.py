@@ -163,44 +163,40 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
 }
 
-/* ── v3.6 무적의 Float 그리드 (초강력 호환성) ── */
-#at-grid-start ~ div.element-container {
-    display: block !important;
-    float: left !important;
-    width: 31% !important;
-    margin: 1% !important;
+/* ── v3.7 무적의 NON-STACKING 컬럼 시스템 ── */
+[data-testid="stHorizontalBlock"] {
+    display: flex !important;
+    flex-direction: row !important; /* Force Horizontal! */
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
 }
-#at-grid-end {
-    clear: both !important;
-    display: block !important;
-    height: 0 !important;
-}
-#at-grid-end ~ div.element-container {
-    clear: none !important;
-    float: none !important;
-    width: 100% !important;
+[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+    width: 33.33% !important;
+    flex: 1 1 33.33% !important;
+    min-width: 0 !important;
 }
 
-/* 버튼 내부 디자인 미세 조정 (v3.6) */
-.stButton > button {
-    aspect-ratio: 1 / 1.02 !important;
+/* 버튼 타일 디자인 (v3.7) */
+.icon-btn > div.stButton > button {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 20px !important;
     background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
     border: 1px solid rgba(254,255,0,0.15) !important;
-    border-radius: 20px !important;
     color: #ffffff !important;
-    font-size: 0.75rem !important; /* 조금 더 작게 */
-    font-weight: 800 !important;
-    padding: 8px 4px !important; /* 패딩 축소 */
-    white-space: pre-wrap !important;
+    font-size: 0.75rem !important; font-weight: 800 !important;
+    display: flex !important; flex-direction: column !important;
+    align-items: center !important; justify-content: center !important;
+    padding: 10px 5px !important;
     transition: all 0.2s ease !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
 }
-.stButton > button:hover {
+.icon-btn > div.stButton > button:hover {
     transform: translateY(-3px) !important;
     border-color: #CCFF00 !important;
 }
-.stButton > button p::first-line {
-    font-size: 2.2rem !important; /* 아이콘 크기 살짝 축소 */
-}
+.icon-btn > div.stButton > button p { margin: 0 !important; line-height: 1.1 !important; }
+.icon-btn > div.stButton > button p::first-line { font-size: 2.2rem !important; }
 
 /* ── Action Tower Profile Card (Dark Premium) ── */
 .at-profile-card {
@@ -505,43 +501,42 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.6</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.7</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
     {ceo_btn}
 </div>
-<div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">\u26a1 \ube60\ub978 \uc774\ub3d9</div>
-""", unsafe_allow_html=True)
-
-    # ── v3.5 무적의 Inline-Block 아이콘 그리드 (st.columns 미사용) ──
-    st.markdown('<div id="at-grid-start"></div>', unsafe_allow_html=True)
-    
-    for item in HOME_MENU:
-        locked = not can_access(item["min_role"])
-        coming = item["coming_soon"]
-        
-        if coming:
-            div_class = "at-btn-coming"
-            badge = " 🚧"
-        elif locked:
-            div_class = "at-btn-locked"
-            badge = " 🔒"
-        else:
-            div_class = "at-btn-active"
-            badge = ""
-
-        btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
-        
-        if st.button(btn_label, key=f"at_btn_{item['id']}", use_container_width=True):
+    # ── v3.7 무적의 NON-STACKING 3열 컬럼 ──
+    rows = [HOME_MENU[i:i+3] for i in range(0, len(HOME_MENU), 3)]
+    for row in rows:
+        cols = st.columns(3)
+        for col, item in zip(cols, row):
+            locked = not can_access(item["min_role"])
+            coming = item["coming_soon"]
+            
             if coming:
-                st.toast("🚧 준비 중입니다.")
+                btn_class = "icon-btn icon-btn-coming"
+                badge = " 🚧"
             elif locked:
-                st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
-            elif item["page"]:
-                st.switch_page(item["page"])
-                
-    st.markdown('<div id="at-grid-end"></div>', unsafe_allow_html=True)
+                btn_class = "icon-btn icon-btn-locked"
+                badge = " 🔒"
+            else:
+                btn_class = "icon-btn"
+                badge = ""
+
+            btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
+            with col:
+                st.markdown(f'<div class="{btn_class}">', unsafe_allow_html=True)
+                if st.button(btn_label, key=f"home_v37_{item['id']}", use_container_width=True):
+                    if coming:
+                        st.toast("🚧 준비 중입니다.")
+                    elif locked:
+                        st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
+                    elif item["page"]:
+                        st.switch_page(item["page"])
+                st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("---")
 
 
