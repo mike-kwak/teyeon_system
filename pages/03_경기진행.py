@@ -131,8 +131,8 @@ with main_tabs[0]:
             st.session_state.last_idx = idx
 
         def change_s(side, delta):
-            if side == 1: st.session_state.s1_val = max(0, st.session_state.s1_val + delta)
-            else: st.session_state.s2_val = max(0, st.session_state.s2_val + delta)
+            if side == 1: st.session_state.s1_val = max(0, min(6, st.session_state.s1_val + delta))
+            else: st.session_state.s2_val = max(0, min(6, st.session_state.s2_val + delta))
             st.session_state.vibrate_trigger = True # v7.3 햅틱 트리거
 
         # ── 가로형 프리미엄 점수 카드 (v7.0) ──
