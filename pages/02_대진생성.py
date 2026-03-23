@@ -37,36 +37,36 @@ div.stButton > button:first-child { background-color: #FEE500 !important; color:
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
 
-/* v9.2: 모바일 환경 (화면 너비 768px 이하) - 버튼 강제 3열 그리드 */
-@media (max-width: 768px) {
-    /* 버튼을 감싸는 개별 컨테이너를 인라인 블록으로 강제 전환 */
-    div.element-container:has(div.stButton) {
-        display: inline-block !important;
-        width: 32% !important; /* 3열 꽉 채우기 */
-        margin-bottom: 5px !important;
-        vertical-align: top !important;
-    }
-    /* 버튼 스타일 통일 및 글자 짤림 방지 */
-    div.stButton > button {
-        width: 100% !important;
-        padding: 6px 2px !important;
-        font-size: 0.72rem !important;
-        background: rgba(40, 40, 60, 0.8) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 8px !important;
-        color: #ccc !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-    /* 선택된 인원 전용 스타일 (Neon Orange-Red) */
-    div.stButton:has(button[data-member-active="true"]) > button {
-        background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
-        border-color: #ff3d71 !important;
-        color: #fff !important;
-        font-weight: 800 !important;
-        box-shadow: 0 0 10px rgba(255, 61, 113, 0.4) !important;
-    }
+/* v10.0: 어떠한 환경에서도 깨지지 않는 완전 수동 그리드 */
+.attendance-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+    margin-top: 10px !important;
+    width: 100% !important;
+}
+.member-chip {
+    background: rgba(45, 45, 65, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 12px 2px !important;
+    text-align: center !important;
+    font-size: 0.72rem !important;
+    color: #ccc !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    display: block !important;
+    transition: all 0.2s !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+.member-chip.active {
+    background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
+    border-color: #ff3d71 !important;
+    color: #fff !important;
+    font-weight: 800 !important;
+    box-shadow: 0 0 10px rgba(255, 61, 113, 0.5) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -146,43 +146,50 @@ with col_left:
     except Exception as e:
         st.error(f"선택 처리 중 오류 발생: {e}")
 
+    # ── v10.0: 경로 안전 클릭 감지 및 상태 업데이트 ──
+    try:
+        if "toggle_id" in st.query_params:
+            toggle_id = st.query_params.get("toggle_id")
+            target_m = next((m for m in members if str(m.get("id")) == str(toggle_id)), None)
+            if target_m:
+                m_id, m_name = target_m["id"], target_m.get("nickname", "")
+                if m_id in st.session_state.selected_members:
+                    st.session_state.selected_members.remove(m_id)
+                    st.session_state.player_times.pop(m_name, None)
+                    st.session_state.player_groups.pop(m_name, None)
+                else:
+                    st.session_state.selected_members.append(m_id)
+                    st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
+                    st.session_state.player_groups[m_name] = "A"
+            
+            # 파라미터 비우고 현재 페이지로 명시적 리다이렉트 (권한 에러 방지)
+            for k in list(st.query_params.keys()): del st.query_params[k]
+            st.rerun()
+    except Exception as e:
+        st.error(f"오류: {e}")
+
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    # v9.2: 네이티브 버튼 그리드 - URL 리대용이 필요 없는 최강의 안정성
+    # v10.0: 경로를 포함한 무적의 수동 HTML 그리드 렌더링
+    grid_html = '<div class="attendance-grid">'
+    # Streamlit Cloud에서 멀티페이지 경로 문제 해결을 위해 상대 경로 사용
+    base_path = "대진%20생성" 
+    
     for m in filtered:
         m_id, m_name = m["id"], m.get("nickname", "이름없음")
-        is_active = m_id in st.session_state.selected_members
+        is_active = "active" if m_id in st.session_state.selected_members else ""
         display_text = m_name
         if st.session_state.use_group_division:
             display_text += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
         
-        # 버튼을 누르면 즉시 상태 전환 (Native Streamlit)
-        if st.button(display_text, key=f"btn_{m_id}", help="클릭하여 참석 체크/해제"):
-            if is_active:
-                st.session_state.selected_members.remove(m_id)
-                st.session_state.player_times.pop(m_name, None)
-                st.session_state.player_groups.pop(m_name, None)
-            else:
-                st.session_state.selected_members.append(m_id)
-                st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
-                st.session_state.player_groups[m_name] = "A"
-            st.rerun()
-
-        # JS를 통해 버튼 속성에 "active" 상태를 주입 (CSS에서 색상을 바꾸기 위함)
-        if is_active:
-             st.markdown(f"""
-                <script>
-                var btns = window.parent.document.querySelectorAll('button');
-                for (var i = 0; i < btns.length; i++) {{
-                    if (btns[i].innerText.includes('{m_name}')) {{
-                        btns[i].setAttribute('data-member-active', 'true');
-                    }}
-                }}
-                </script>
-            """, unsafe_allow_html=True)
-
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn"):
+        # 02_대진생성.py를 명시적으로 가리키는 파라미티 링크
+        grid_html += f'<a href="./{base_path}?toggle_id={m_id}" class="member-chip {is_active}" target="_self">{display_text}</a>'
+    grid_html += '</div>'
+    
+    st.markdown(grid_html, unsafe_allow_html=True)
+    
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v10"):
         st.session_state.selected_members = []
         st.session_state.player_times = {}
         st.session_state.player_groups = {}
