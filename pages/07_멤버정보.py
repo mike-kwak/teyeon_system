@@ -16,10 +16,43 @@ def get_local_img_base64(path):
             return base64.b64encode(data).decode()
     return None
 
-st.markdown("""
-<style>
+/* v5.0 모바일 3열 그리드 강제 적용 */
+@media (max-width: 768px) {
+    [data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+    }
+    [data-testid="stHorizontalBlock"] > div {
+        width: 33.33% !important;
+        min-width: 0 !important;
+        flex: 1 1 33.33% !important;
+    }
+    .member-card { 
+        padding: 12px 6px !important; 
+        border-radius: 12px !important;
+        margin-bottom: 10px !important;
+    }
+    .profile-img-container {
+        width: 45px !important; 
+        height: 45px !important;
+        margin-right: 0 !important;
+        margin-bottom: 8px !important;
+    }
+    .member-header {
+        flex-direction: column !important;
+        margin-bottom: 15px !important;
+        padding-bottom: 10px !important;
+    }
+    .member-name { font-size: 0.85rem !important; }
+    .member-role { font-size: 0.65rem !important; padding: 1px 6px !important; }
+    .info-section { display: none !important; } /* 모바일에서는 카드 간소화 */
+}
+
 .member-card { 
     background: rgba(255, 255, 255, 0.07); 
+... (unchanged) ...
     border-radius: 20px; 
     border: 1px solid rgba(255, 255, 255, 0.1); 
     padding: 28px; /* 패딩 추가 확대 */
@@ -103,7 +136,23 @@ members = get_all_members(CLUB_ID)
 
 # ── 운영진 및 프로필 설정 ───────────────────────────────────────────────────
 ADMIN_MAP = {"박광현": "회장", "강정호": "부회장", "정상윤": "총무", "곽민섭": "재무이사", "김민준": "경기이사", "남인우": "섭외이사"}
-PIC_DIR = "c:/Users/섭이/Desktop/AI/1. Teyeon/Teyeon pic"
+
+# 사진 경로: 1. 상대경로(member_pics)  2. 절대경로(사용자 PC)
+RELATIVE_PIC_DIR = "member_pics"
+FALLBACK_PIC_DIR = "c:/Users/섭이/Desktop/AI/1. Teyeon/Teyeon pic"
+
+def find_member_image(nickname):
+    """다양한 경로와 확장자에서 멤버 이미지를 찾음"""
+    exts = [".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"]
+    dirs = [RELATIVE_PIC_DIR, FALLBACK_PIC_DIR]
+    
+    for d in dirs:
+        if not os.path.exists(d): continue
+        for ext in exts:
+            path = os.path.join(d, f"{nickname}{ext}")
+            if os.path.exists(path):
+                return path
+    return None
 
 def get_sort_priority(m):
     n = m.get("nickname", "").strip()
@@ -119,59 +168,60 @@ filtered = [m for m in members if search_query.lower() in m.get("nickname", "").
 if not filtered:
     st.info("검색 결과가 없습니다.")
 else:
-    cols = st.columns(3)
-    for idx, m in enumerate(filtered):
-        with cols[idx % 3]:
-            nickname = m.get("nickname", "이름 없음").strip()
-            is_admin = m.get("is_admin", False)
-            
-            # 직책 결정
-            pos = ADMIN_MAP.get(nickname) or m.get("position") or ("운영진" if is_admin else "회원")
-            role_class = "role-admin" if (is_admin or nickname in ADMIN_MAP) else "role-member"
-            
-            # 프로필 이미지 처리
-            img_html = "🎾"
-            # 1. DB에 이미지 URL이 있는 경우
-            m_img = m.get("profile_image")
-            # 2. 로컬 폴더에 이름과 일치하는 이미지가 있는 경우 (우선순위)
-            local_path = os.path.join(PIC_DIR, f"{nickname}.png")
-            if not os.path.exists(local_path):
-                local_path = os.path.join(PIC_DIR, f"{nickname}.jpg")
-            
-            b64_img = get_local_img_base64(local_path)
-            if b64_img:
-                img_html = f'<img src="data:image/png;base64,{b64_img}">'
-            elif m_img:
-                img_html = f'<img src="{m_img}">'
-            
-            # 카드 HTML 구성
-            html = f"""
-            <div class="member-card">
-                <div class="member-header">
-                    <div class="profile-img-container">{img_html}</div>
-                    <div class="name-role-container">
-                        <div class="member-name">{nickname}</div>
-                        <div class="member-role {role_class}">{pos}</div>
+    # ── v5.0 무적의 3열 그리드 루프 (행 단위 생성) ──
+    rows = [filtered[i:i+3] for i in range(0, len(filtered), 3)]
+    
+    for row in rows:
+        cols = st.columns(3)
+        for idx, m in enumerate(row):
+            with cols[idx]:
+                nickname = m.get("nickname", "이름 없음").strip()
+                is_admin = m.get("is_admin", False)
+                
+                # 직책 결정
+                pos = ADMIN_MAP.get(nickname) or m.get("position") or ("회원")
+                role_class = "role-admin" if (is_admin or nickname in ADMIN_MAP) else "role-member"
+                
+                # 프로필 이미지 처리
+                img_html = "🎾"
+                # 1. DB 이미지 URL
+                m_img = m.get("profile_image")
+                # 2. 로컬/상대경로 이미지 (우선순위)
+                found_path = find_member_image(nickname)
+                
+                b64_img = get_local_img_base64(found_path) if found_path else None
+                if b64_img:
+                    img_html = f'<img src="data:image/png;base64,{b64_img}">'
+                elif m_img:
+                    img_html = f'<img src="{m_img}">'
+                
+                # 카드 HTML 구성
+                st.markdown(f"""
+                <div class="member-card">
+                    <div class="member-header">
+                        <div class="profile-img-container">{img_html}</div>
+                        <div class="name-role-container">
+                            <div class="member-name">{nickname}</div>
+                            <div class="member-role {role_class}">{pos}</div>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="info-label">📞 연락처</div>
+                            <div class="info-value">{m.get("phone") or "-"}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">🏠 소속</div>
+                            <div class="info-value">{m.get("affiliation") or "-"}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">✨ MBTI</div>
+                            <div class="info-value">{m.get("mbti") or "-"}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">🏆 입상 경력</div>
+                            <div class="info-value">{m.get("achievements") or "-"}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="info-section">
-                    <div class="info-item">
-                        <div class="info-label">📞 연락처</div>
-                        <div class="info-value">{m.get("phone") or "-"}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">🏠 소속</div>
-                        <div class="info-value">{m.get("affiliation") or "-"}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">✨ MBTI</div>
-                        <div class="info-value">{m.get("mbti") or "-"}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">🏆 입상 경력</div>
-                        <div class="info-value">{m.get("achievements") or "-"}</div>
-                    </div>
-                </div>
-            </div>
-            """
-            st.markdown(html, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
