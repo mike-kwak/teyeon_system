@@ -120,9 +120,10 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
 
+    st.markdown('<div id="attendee-grid-wrapper">', unsafe_allow_html=True)
     st.markdown('<div class="attendance-section">', unsafe_allow_html=True)
     
-    # v20.0: st.columns(3)를 사용한 예쁜 3열 분배
+    # v21.0: st.columns(3)를 사용한 외과 수술식 3열 분배
     cols = st.columns(3)
     for i, m in enumerate(filtered):
         m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
@@ -131,6 +132,8 @@ with col_left:
         with cols[i % 3]:
             # 체크박스 생성: 리런(rerun) 없이 즉시 반응하는 위장 버튼
             st.checkbox(m_name, key=f"att_{m_id}", value=is_pre_selected, label_visibility="visible")
+
+    st.markdown('</div>', unsafe_allow_html=True) # attendee-grid-wrapper 닫기
 
     # 선택된 인원 집계 로직
     current_selected = []
@@ -150,7 +153,7 @@ with col_left:
     # 동기화
     st.session_state.selected_members = current_selected
 
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v20_1"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v21"):
         for m in members: st.session_state[f"att_{m.get('id')}"] = False
         st.session_state.selected_members = []
         st.session_state.player_times = {}
