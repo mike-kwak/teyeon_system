@@ -67,20 +67,6 @@ div[data-testid="stCheckbox"] label:has(input:checked) p {
     font-weight: 900 !important;
 }
 
-/* v20.0: 모바일에서 st.columns가 1열로 뭉치는 것 완벽 차단 */
-@media (max-width: 768px) {
-    div[data-testid="stHorizontalBlock"] {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 0px !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-        width: 32% !important;
-        flex: 1 1 32% !important;
-        min-width: 32% !important;
-        padding: 0 2px !important; /* 버튼 사이 간격 */
-    }
-}
 
 /* 섹션 카드 및 기본 설정 */
 .section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
