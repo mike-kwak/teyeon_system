@@ -37,23 +37,26 @@ div.stButton > button:first-child { background-color: #FEE500 !important; color:
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
     
-    /* v8.3: 그리드 주입 (확실한 3열 강제) */
+    /* v8.5: 무적의 Flexbox 3열 그리드 (st.columns 미사용 우회법) */
+    div.attendance-flex-area [data-testid="stVerticalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+    }
+    div.attendance-flex-area [data-testid="stVerticalBlock"] > div {
+        flex: 1 1 31% !important;
+        width: 31% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+    
     @media (max-width: 768px) {
-        div[data-testid="stVerticalBlockBordered"]:has(.attendance-target) div[data-testid="stHorizontalBlock"] {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr 1fr !important;
-            gap: 4px !important;
-        }
-        div[data-testid="stVerticalBlockBordered"]:has(.attendance-target) div[data-testid="stHorizontalBlock"] > div {
-            width: 100% !important;
-            min-width: 0 !important;
-        }
-        div[data-testid="stVerticalBlockBordered"]:has(.attendance-target) label {
+        div.attendance-flex-area label {
             font-size: 0.72rem !important;
             white-space: nowrap !important;
             overflow: hidden !important;
             text-overflow: ellipsis !important;
-            padding: 1px 0 !important;
         }
     }
 </style>
@@ -114,26 +117,25 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    # v8.2: 테두리 있는 컨테이너로 확실하게 묶어줌
-    with st.container(border=True):
-        st.markdown('<div class="attendance-target"></div>', unsafe_allow_html=True)
-        m_cols = st.columns(3)
+    # v8.5: 무적의 3열 우회법 - columns를 쓰지 않고 Flexbox로 직접 배치
+    st.markdown('<div class="attendance-flex-area">', unsafe_allow_html=True)
+    with st.container():
         for i, m in enumerate(filtered):
             m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
-            with m_cols[i % 3]:
-                display_name = f"{m_name}"
-                if st.session_state.use_group_division:
-                     display_name += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
-                
-                if st.checkbox(display_name, value=m_id in st.session_state.selected_members, key=f"mem_{m_id}"):
-                    if m_id not in st.session_state.selected_members: st.session_state.selected_members.append(m_id)
-                    if m_name not in st.session_state.player_times: st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
-                    if m_name not in st.session_state.player_groups: st.session_state.player_groups[m_name] = "A"
-                else:
-                    if m_id in st.session_state.selected_members:
-                        st.session_state.selected_members.remove(m_id)
-                        st.session_state.player_times.pop(m_name, None); st.session_state.player_groups.pop(m_name, None)
-    st.markdown('</div>', unsafe_allow_html=True) # 기존 section-card 닫기
+            display_name = f"{m_name}"
+            if st.session_state.use_group_division:
+                 display_name += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
+            
+            if st.checkbox(display_name, value=m_id in st.session_state.selected_members, key=f"mem_{m_id}"):
+                if m_id not in st.session_state.selected_members: st.session_state.selected_members.append(m_id)
+                if m_name not in st.session_state.player_times: st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
+                if m_name not in st.session_state.player_groups: st.session_state.player_groups[m_name] = "A"
+            else:
+                if m_id in st.session_state.selected_members:
+                    st.session_state.selected_members.remove(m_id)
+                    st.session_state.player_times.pop(m_name, None); st.session_state.player_groups.pop(m_name, None)
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True) # section-card 닫기
 
 with col_right:
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
