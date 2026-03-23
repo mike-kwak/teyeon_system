@@ -35,26 +35,28 @@ st.markdown("""
 .section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
 div.stButton > button:first-child { background-color: #FEE500 !important; color: #000000 !important; font-weight: 800 !important; border: none !important; padding: 0.25rem 0.5rem; }
 
-/* v7.9: 참석자 체크 3열 강제 (모바일) */
-@media (max-width: 768px) {
-    div[data-testid="stHorizontalBlock"]:has(.member-check-grid) {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        align-items: flex-start !important;
-        gap: 5px !important;
+    .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
+    
+    /* v8.0: 마커 바로 뒤의 컬럼들만 가로로 고정 (메인 레이아웃 붕괴 방지) */
+    @media (max-width: 768px) {
+        div:has(> .member-check-grid-marker) + div[data-testid="stHorizontalBlock"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            align-items: flex-start !important;
+            gap: 4px !important;
+        }
+        div:has(> .member-check-grid-marker) + div[data-testid="stHorizontalBlock"] > div {
+            flex: 1 1 31% !important;
+            width: 31% !important;
+            min-width: 0 !important;
+            margin-bottom: 4px !important;
+        }
+        div:has(> .member-check-grid-marker) + div[data-testid="stHorizontalBlock"] label {
+            font-size: 0.7rem !important;
+            padding: 2px 0 !important;
+        }
     }
-    div[data-testid="stHorizontalBlock"]:has(.member-check-grid) > div {
-        flex: 1 1 30% !important;
-        width: 30% !important;
-        min-width: 0 !important;
-        margin-bottom: 5px !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(.member-check-grid) label {
-        font-size: 0.75rem !important; /* 모바일 글자 크기 축소 */
-        padding: 2px 0 !important;
-    }
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -113,7 +115,7 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    st.markdown('<div class="member-check-grid"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="member-check-grid-marker"></div>', unsafe_allow_html=True)
     m_cols = st.columns(3)
     for i, m in enumerate(filtered):
         m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
