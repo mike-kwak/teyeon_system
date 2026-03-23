@@ -246,6 +246,20 @@ with main_tabs[1]:
                 fine_last_25=award_config.get("fine_last_25", 5000)
             )
             
+            res_data = []
+            for r in overall_rank:
+                name = r["이름"]
+                amt = rewards.get(name, 0) - fines.get(name, 0)
+                note = ""
+                if name in rewards: note = f"👑 상금 (+{rewards[name]:,})"
+                elif name in fines: note = f"❗ 벌금 (-{fines[name]:,})"
+                
+                res_data.append({
+                    "순위": r["순위"], "이름": name, "승": r["승"], "패": r["패"], 
+                    "득실차": f"{r['득실차']:+}", "경기수": r["경기수"],
+                    "정산액": f"{amt:,}원", "비고": note
+                })
+
             # HTML 테이블로 가운데 정렬 구현
             html_table = f"""
             <style>
