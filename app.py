@@ -382,11 +382,11 @@ ROLE_LABELS = {
     "Guest":  ("🔓 게스트",     "#aab8d4"),
 }
 HOME_MENU = [
-    dict(icon="👤", label="멤버\n정보",   page="pages/07_멤버정보.py",  min_role="Member", coming_soon=False),
-    dict(icon="🎾", label="KDK\n대진표",  page="pages/02_대진생성.py",  min_role="Staff",  coming_soon=False),
-    dict(icon="🏆", label="실시간\n랭킹",  page="pages/05_랭킹.py",      min_role="Member", coming_soon=False),
-    dict(icon="💰", label="상벌금\n현황",  page="pages/04_재무.py",      min_role="Member", coming_soon=False),
-    dict(icon="🏅", label="대회\n모드",    page=None,                    min_role="Member", coming_soon=True),
+    dict(icon="👥", label="멤버 정보",   page="pages/07_멤버정보.py",  min_role="Member", coming_soon=False),
+    dict(icon="🎾", label="KDK 대진표",  page="pages/02_대진생성.py",  min_role="Staff",  coming_soon=False),
+    dict(icon="🏆", label="실시간 랭킹",  page="pages/05_랭킹.py",      min_role="Member", coming_soon=False),
+    dict(icon="💰", label="상벌금 현황",  page="pages/04_재무.py",      min_role="Member", coming_soon=False),
+    dict(icon="🏅", label="대회 모드",    page=None,                    min_role="Member", coming_soon=True),
     dict(icon="💬", label="커뮤니티",      page=None,                    min_role="Member", coming_soon=True),
 ]
 
@@ -406,71 +406,83 @@ def _render_home(user: dict, role: str):
 .at-profile-card {
     display: flex; align-items: center; justify-content: space-between;
     background: linear-gradient(135deg, rgba(26,37,61,0.95), rgba(10,14,26,0.98));
-    border: 1px solid rgba(204,255,0,0.22); border-radius: 22px;
-    padding: 18px 20px; margin-bottom: 20px;
+    border: 1px solid rgba(204,255,0,0.22); border-radius: 20px;
+    padding: 16px 18px; margin-bottom: 20px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.45);
 }
 .at-profile-info { display: flex; align-items: center; gap: 14px; }
 .at-avatar {
     width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
-    border: 2.5px solid #CCFF00;
+    border: 2px solid #CCFF00;
 }
 .at-avatar-init {
     width: 54px; height: 54px; border-radius: 50%;
-    background: linear-gradient(135deg,#1a253d,#2a3f5f);
+    background: linear-gradient(135deg,#1a253d,#CCFF00 200%);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 1.4rem; color: #CCFF00;
-    border: 2.5px solid #CCFF00;
+    font-weight: 900; font-size: 20px; color: #0A0E1A;
+    border: 2px solid #CCFF00;
 }
 .at-name {
     font-family: 'Outfit',sans-serif; font-weight: 900;
-    font-size: 1.05rem; color: #fff; line-height: 1.25;
+    font-size: 1.15rem; color: #fff; line-height: 1.2;
 }
 .at-badge {
-    display: inline-block; font-size: 0.68rem; font-weight: 700;
-    padding: 2px 10px; border-radius: 30px; margin-top: 5px; border: 1px solid;
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    padding: 2px 10px; border-radius: 30px; margin-top: 4px; border: 1px solid;
+    background: rgba(255,255,255,0.05);
 }
 .at-ceo-btn {
     background: linear-gradient(135deg,#CCFF00,#a8d400);
     color: #0A0E1A !important; font-weight: 900 !important;
     font-size: 0.78rem !important; border: none !important;
-    border-radius: 14px !important; padding: 9px 15px !important;
+    border-radius: 14px !important; padding: 8px 14px !important;
     cursor: pointer; white-space: nowrap; text-decoration: none;
     box-shadow: 0 4px 16px rgba(204,255,0,0.35);
 }
 .at-grid-title {
-    font-family: 'Outfit',sans-serif; font-size: 0.72rem; font-weight: 700;
+    font-family: 'Outfit',sans-serif; font-size: 0.75rem; font-weight: 700;
     color: #aab8d4; letter-spacing: 1.5px; text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 /* 아이콘 그리드 버튼 스타일 */
 .icon-btn > div.stButton > button {
-    width: 100% !important; min-height: 90px !important;
-    border-radius: 18px !important;
-    background: rgba(255,255,255,0.04) !important;
-    border: 1px solid rgba(255,255,255,0.09) !important;
-    color: #d0ddf0 !important;
+    width: 100% !important;
+    aspect-ratio: 1 / 1.05 !important;
+    min-height: auto !important;
+    border-radius: 20px !important;
+    background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    color: #e2e8f0 !important;
     font-family: 'Outfit', sans-serif !important;
-    font-size: 0.73rem !important; font-weight: 700 !important;
-    line-height: 1.4 !important; transition: all 0.25s ease !important;
-    padding: 14px 6px !important; white-space: pre-line !important;
+    font-size: 0.8rem !important; font-weight: 800 !important;
+    line-height: 1.3 !important; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    padding: 18px 6px !important; white-space: pre-line !important;
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.3), -2px -2px 10px rgba(255,255,255,0.02) !important;
+    display: flex !important; flex-direction: column !important;
+    align-items: center !important; justify-content: center !important;
 }
 .icon-btn > div.stButton > button:hover {
-    background: rgba(204,255,0,0.09) !important;
+    background: linear-gradient(145deg, rgba(45,55,80,0.95), rgba(25,35,55,0.98)) !important;
     border-color: rgba(204,255,0,0.5) !important;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(204,255,0,0.18) !important;
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(204,255,0,0.2) !important;
     color: #fff !important;
 }
+.icon-btn > div.stButton > button p { margin: 0 !important; }
+.icon-btn > div.stButton > button p::first-line {
+    font-size: 3.2rem !important;
+    line-height: 1.2 !important;
+}
+
 .icon-btn-locked > div.stButton > button {
-    opacity: 0.42 !important; cursor: not-allowed !important;
+    opacity: 0.5 !important; cursor: not-allowed !important; filter: grayscale(0.5);
 }
 .icon-btn-locked > div.stButton > button:hover {
-    transform: none !important; background: rgba(255,255,255,0.04) !important;
-    border-color: rgba(255,255,255,0.09) !important; box-shadow: none !important;
+    transform: none !important; background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
+    border-color: rgba(255,255,255,0.06) !important; box-shadow: 4px 4px 12px rgba(0,0,0,0.3) !important;
 }
 .icon-btn-coming > div.stButton > button {
-    opacity: 0.32 !important; cursor: default !important;
+    opacity: 0.4 !important; cursor: default !important;
 }
 .icon-btn-coming > div.stButton > button:hover { transform: none !important; }
 
@@ -524,7 +536,7 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">⭐ {nickname} 님<br>안녕하세요!</div>
+            <div class="at-name">⭐ {nickname} 님 안녕하세요!</div>
             <div class="at-badge" style="color:{role_color};border-color:{role_color}44;">{role_text}</div>
         </div>
     </div>
@@ -541,14 +553,14 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
         coming = item["coming_soon"]
         if coming:
             div_class = "icon-btn icon-btn-coming"
-            badge = "\n🚧"
+            badge = " 🚧"
         elif locked:
             div_class = "icon-btn icon-btn-locked"
-            badge = "\n🔒"
+            badge = " 🔒"
         else:
             div_class = "icon-btn"
             badge = ""
-        btn_label = f"{item['icon']}\n{item['label']}{badge}"
+        btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
         with col:
             st.markdown(f'<div class="{div_class}">', unsafe_allow_html=True)
             if st.button(btn_label, key=f"home_{item['icon']}", use_container_width=True):

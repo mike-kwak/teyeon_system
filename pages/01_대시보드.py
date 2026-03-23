@@ -115,41 +115,56 @@ st.markdown("""
     text-decoration: none;
 }
 
-/* ── 아이콘 그리드 공통 버튼 베이스 ── */
+/* ── 아이콘 그리드 공통 버튼 베이스 (Desired UI) ── */
 .icon-btn > div.stButton > button {
     width: 100% !important;
-    min-height: 88px !important;
-    border-radius: 18px !important;
-    background: rgba(255,255,255,0.04) !important;
-    border: 1px solid rgba(255,255,255,0.09) !important;
-    color: #d0ddf0 !important;
+    aspect-ratio: 1 / 1.05 !important;
+    min-height: auto !important;
+    border-radius: 20px !important;
+    background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    color: #e2e8f0 !important;
     font-family: 'Outfit', sans-serif !important;
-    font-size: 0.72rem !important;
-    font-weight: 700 !important;
-    line-height: 1.35 !important;
-    transition: all 0.25s ease !important;
-    padding: 14px 6px !important;
+    font-size: 0.8rem !important;
+    font-weight: 800 !important;
+    line-height: 1.3 !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    padding: 18px 6px !important;
     white-space: pre-line !important;
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.3), -2px -2px 10px rgba(255,255,255,0.02) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 .icon-btn > div.stButton > button:hover {
-    background: rgba(204,255,0,0.08) !important;
-    border-color: rgba(204,255,0,0.45) !important;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(204,255,0,0.15) !important;
+    background: linear-gradient(145deg, rgba(45,55,80,0.95), rgba(25,35,55,0.98)) !important;
+    border-color: rgba(204,255,0,0.5) !important;
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(204,255,0,0.2) !important;
     color: #ffffff !important;
 }
+.icon-btn > div.stButton > button p {
+    margin: 0 !important;
+}
+/* 이모지를 크고 멋지게 (3D 아이콘 느낌) */
+.icon-btn > div.stButton > button p::first-line {
+    font-size: 3.2rem !important;
+    line-height: 1.2 !important;
+}
 .icon-btn-locked > div.stButton > button {
-    opacity: 0.45 !important;
+    opacity: 0.5 !important;
     cursor: not-allowed !important;
+    filter: grayscale(0.5);
 }
 .icon-btn-locked > div.stButton > button:hover {
     transform: none !important;
-    background: rgba(255,255,255,0.04) !important;
-    border-color: rgba(255,255,255,0.09) !important;
-    box-shadow: none !important;
+    background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
+    border-color: rgba(255,255,255,0.06) !important;
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.3) !important;
 }
 .icon-btn-coming > div.stButton > button {
-    opacity: 0.35 !important;
+    opacity: 0.4 !important;
     cursor: default !important;
 }
 .icon-btn-coming > div.stButton > button:hover {
@@ -167,7 +182,7 @@ div.stButton > button { border-radius: 12px !important; font-weight: 700 !import
     color: #aab8d4;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -180,19 +195,19 @@ div.stButton > button { border-radius: 12px !important; font-weight: 700 !import
 # min_role: 이 이상 권한이어야 접근 가능 / coming_soon: True면 잠금
 MENU = [
     # Row 1
-    dict(icon="👤", label="멤버\n정보",    page="pages/07_멤버정보.py",  min_role="Member",  coming_soon=False),
-    dict(icon="🎾", label="KDK\n대진표",   page="pages/02_대진생성.py",  min_role="Staff",   coming_soon=False),
-    dict(icon="🏆", label="실시간\n랭킹",   page="pages/05_랭킹.py",      min_role="Member",  coming_soon=False),
+    dict(icon="👥", label="멤버 정보",    page="pages/07_멤버정보.py",  min_role="Member",  coming_soon=False),
+    dict(icon="🎾", label="KDK 대진표",   page="pages/02_대진생성.py",  min_role="Staff",   coming_soon=False),
+    dict(icon="🏆", label="실시간 랭킹",   page="pages/05_랭킹.py",      min_role="Member",  coming_soon=False),
     # Row 2
-    dict(icon="💰", label="상벌금\n현황",   page="pages/04_재무.py",      min_role="Member",  coming_soon=False),
-    dict(icon="🏅", label="대회\n모드",     page=None,                    min_role="Member",  coming_soon=True),
+    dict(icon="💰", label="상벌금 현황",   page="pages/04_재무.py",      min_role="Member",  coming_soon=False),
+    dict(icon="🏅", label="대회 모드",     page=None,                    min_role="Member",  coming_soon=True),
     dict(icon="💬", label="커뮤니티",       page=None,                    min_role="Member",  coming_soon=True),
 ]
 
 # ── 프로필 카드 ──
 ceo_btn_html = ""
 if is_ceo():
-    ceo_btn_html = '<a href="pages/09_CEO관리.py" class="ceo-btn">⚙️ 설정 마스터</a>'
+    ceo_btn_html = '<a href="pages/09_CEO관리.py" class="ceo-btn" target="_self">⚙️ 설정 마스터</a>'
 
 st.markdown(f"""
 <div class="mobile-only">
@@ -200,21 +215,21 @@ st.markdown(f"""
     <div class="profile-info">
         {avatar_html(profile_img, initials)}
         <div>
-            <div class="profile-name">⭐ {nickname} 님<br>안녕하세요!</div>
-            <div class="profile-role-badge" style="color:{role_color};border-color:{role_color}33;">
+            <div class="profile-name">⭐ {nickname} 님 안녕하세요!</div>
+            <div class="profile-role-badge" style="color:{role_color};border-color:{role_color}33;background:rgba(255,255,255,0.05);">
                 {role_text}
             </div>
         </div>
     </div>
     {ceo_btn_html}
 </div>
-<div class="section-title">빠른 이동</div>
+<div class="section-title">⚡ 빠른 이동</div>
 </div>
 """, unsafe_allow_html=True)
 
 # ── 아이콘 그리드 (Streamlit 버튼으로 클릭 처리) ──
 # 모바일에서는 CSS로 보이고, PC에서는 숨김
-st.markdown('<div class="mobile-only"><div class="icon-grid">', unsafe_allow_html=True)
+st.markdown('<div class="mobile-only"><div style="margin-bottom:30px;">', unsafe_allow_html=True)
 
 # 잠금 토스트 트리거용 세션
 if "lock_trigger" not in st.session_state:
@@ -222,7 +237,7 @@ if "lock_trigger" not in st.session_state:
 
 rows = [MENU[i:i+3] for i in range(0, len(MENU), 3)]
 for row in rows:
-    cols = st.columns(3)
+    cols = st.columns(3, gap="small")
     for col, item in zip(cols, row):
         locked = not can_access(item["min_role"])
         coming = item["coming_soon"]
@@ -235,9 +250,9 @@ for row in rows:
         else:
             div_class = "icon-btn"
 
-        # 버튼 라벨: 이모지 + 텍스트 + 뱃지
-        badge = "\n🔒" if locked and not coming else ("\n🚧" if coming else "")
-        btn_label = f"{item['icon']}\n{item['label']}{badge}"
+        # 버튼 라벨: 이모지 + 텍스트 + 뱃지 (줄바꿈 두 번으로 ::first-line이 이모지만 잡도록 띄움)
+        badge = " 🔒" if locked and not coming else (" 🚧" if coming else "")
+        btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
 
         with col:
             st.markdown(f'<div class="{div_class}">', unsafe_allow_html=True)

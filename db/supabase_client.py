@@ -134,16 +134,26 @@ def create_kdk_session(club_id: str, session_date: str, created_by: str, note: s
         "title": title or f"대진표_{session_date}",
     }
     if award_config:
-        # award_config 컬럼이 없을 수도 있으므로 note에 백업 저장하거나 
-        # 테이블 컬럼이 있다고 가정 (보통 JSONB 타입 권장)
         data["award_config"] = award_config
         
-    res = (
-        client.table("kdk_sessions")
-        .insert(data)
-        .execute()
-    )
-    return res.data[0] if res.data else {}
+    try:
+        res = client.table("kdk_sessions").insert(data).execute()
+        return res.data[0] if res.data else {}
+    except Exception as e:
+        # Supabase DB에 title, award_config 컬럼이 없어서 오류가 나는 경우 폴백(Fallback)
+        fallback_note = note
+        if title and title not in note:
+            fallback_note = f"[{title}] {note}"
+            
+        fallback_data = {
+            "club_id": club_id,
+            "session_date": session_date,
+            "created_by": created_by,
+            "note": fallback_note,
+            "status": "draft",
+        }
+        res = client.table("kdk_sessions").insert(fallback_data).execute()
+        return res.data[0] if res.data else {}
 
 
 def get_kdk_sessions(club_id: str, limit: int = 20) -> list[dict]:

@@ -42,6 +42,43 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
     background: rgba(204, 255, 0, 0.05); border: 1px dashed #CCFF00;
     padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem;
 }
+/* KDK 스코어 카드 스타일링 */
+div[data-testid="column"]:has(.team-card-wrapper) {
+    background: linear-gradient(135deg, rgba(26,37,61,0.9), rgba(10,14,26,0.95)) !important;
+    border: 1px solid rgba(204,255,0,0.3) !important;
+    border-radius: 24px !important;
+    padding: 20px 10px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+}
+.kdk-score-name {
+    font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.4;
+    text-align: center; margin-bottom: 15px; min-height: 2.8em;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+}
+.kdk-score-number {
+    font-size: 5.5rem; font-weight: 900; color: #CCFF00; line-height: 1;
+    text-align: center; font-family: 'Outfit', sans-serif;
+    text-shadow: 0 0 25px rgba(204,255,0,0.5); margin-bottom: 20px;
+}
+.kdk-vs-text {
+    font-size: 1.8rem; font-weight: 900; color: #aab8d4;
+    font-style: italic; opacity: 0.6; text-align: center;
+    margin-top: 50%;
+}
+/* +/- 버튼 약간 크게 */
+div[data-testid="column"]:has(.team-card-wrapper) div.stButton > button {
+    border-radius: 14px !important;
+    font-size: 1.5rem !important;
+    padding: 10px 0 !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    transition: all 0.2s;
+}
+div[data-testid="column"]:has(.team-card-wrapper) div.stButton > button:active {
+    background: rgba(204,255,0,0.2) !important;
+    border-color: #CCFF00 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -114,26 +151,44 @@ with view_tabs[1]:
             if side == 1: st.session_state.s1_val = max(0, st.session_state.s1_val + delta)
             else: st.session_state.s2_val = max(0, st.session_state.s2_val + delta)
 
-        # 팀 1 스텝퍼
-        st.markdown(f'<div class="team-name-badge">{" & ".join(m["team1"])}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="score-stepper-row">', unsafe_allow_html=True)
-        c1, s1, c3 = st.columns([1, 1.5, 1])
-        with c1: st.button("➖", key="s1m", on_click=change_s, args=(1,-1), use_container_width=True)
-        with s1: st.markdown(f'<div class="score-display">{st.session_state.s1_val}</div>', unsafe_allow_html=True)
-        with c3: st.button("➕", key="s1p", on_click=change_s, args=(1, 1), use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # ── 가로형 점수 카드 레이아웃 ──
+        score_col1, vs_col, score_col2 = st.columns([1, 0.2, 1])
+        
+        with score_col1:
+            st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
+            # 프로필 아이콘과 이름
+            names_html1 = "<br>".join(m["team1"])
+            st.markdown(f'''
+            <div class="kdk-score-name">
+                <div style="font-size:2rem;margin-bottom:5px;">👤</div>
+                {names_html1}
+            </div>
+            ''', unsafe_allow_html=True)
+            st.markdown(f'<div class="kdk-score-number">{st.session_state.s1_val}</div>', unsafe_allow_html=True)
+            
+            c_p1, c_m1 = st.columns(2)
+            with c_p1: st.button("➕", key="s1p", on_click=change_s, args=(1, 1), use_container_width=True)
+            with c_m1: st.button("➖", key="s1m", on_click=change_s, args=(1,-1), use_container_width=True)
 
-        st.markdown('<div style="text-align:center; margin:20px 0; font-weight:900;">VS</div>', unsafe_allow_html=True)
+        with vs_col:
+            st.markdown('<div class="kdk-vs-text">VS</div>', unsafe_allow_html=True)
 
-        # 팀 2 스텝퍼
-        st.markdown(f'<div class="team-name-badge">{" & ".join(m["team2"])}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="score-stepper-row">', unsafe_allow_html=True)
-        c1, s1, c3 = st.columns([1, 1.5, 1])
-        with c1: st.button("➖", key="s2m", on_click=change_s, args=(2,-1), use_container_width=True)
-        with s1: st.markdown(f'<div class="score-display">{st.session_state.s2_val}</div>', unsafe_allow_html=True)
-        with c3: st.button("➕", key="s2p", on_click=change_s, args=(2, 1), use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
+        with score_col2:
+            st.markdown('<div class="team-card-wrapper"></div>', unsafe_allow_html=True)
+            names_html2 = "<br>".join(m["team2"])
+            st.markdown(f'''
+            <div class="kdk-score-name">
+                <div style="font-size:2rem;margin-bottom:5px;">🔴</div>
+                {names_html2}
+            </div>
+            ''', unsafe_allow_html=True)
+            st.markdown(f'<div class="kdk-score-number">{st.session_state.s2_val}</div>', unsafe_allow_html=True)
+            
+            c_p2, c_m2 = st.columns(2)
+            with c_p2: st.button("➕", key="s2p", on_click=change_s, args=(2, 1), use_container_width=True)
+            with c_m2: st.button("➖", key="s2m", on_click=change_s, args=(2,-1), use_container_width=True)
+        
+        st.markdown("<br><br>", unsafe_allow_html=True)
         if st.button("💾 점수 저장 및 복귀", type="primary", use_container_width=True):
             m['score1'], m['score2'], m['status'] = st.session_state.s1_val, st.session_state.s2_val, "complete"
             if m.get('id'): update_kdk_match_score(m['id'], m['score1'], m['score2'], "complete")
