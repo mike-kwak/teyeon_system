@@ -36,27 +36,12 @@ st.markdown("""
     background: #0A0E1A; /* Deep Navy */
 }
 
-/* 📱 모바일 강제 세로 정렬(Stacking) 절대 방어 (Nuclear CSS) */
+/* 📱 모바일 강제 세로 정렬(Stacking) 절대 방어 (v17.0) */
 @media (max-width: 768px) {
-    /* 컨테이너를 무조건 가로(row)로 유지하고 줄바꿈(wrap) 허용 */
+    /* 글로벌 수평 블록은 기본적으로 row 유지 */
     div[data-testid="stHorizontalBlock"] {
         flex-direction: row !important;
         flex-wrap: wrap !important;
-        align-items: stretch !important;
-        gap: 5px !important; /* 버튼 사이 간격 */
-    }
-    /* 각 컬럼이 정확히 1/3(약 31%) 사이즈를 차지하도록 절대 고정 */
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-        width: 31% !important;
-        flex: 1 1 31% !important;
-        min-width: 31% !important;
-        margin-bottom: 10px !important;
-    }
-    /* 모바일에서 버튼 안의 글자가 짤리지 않도록 폰트 크기 조정 */
-    div[data-testid="stHorizontalBlock"] button {
-        padding: 8px 4px !important;
-        font-size: 11px !important; 
-        height: auto !important;
     }
 }
 
@@ -142,7 +127,7 @@ html, body, [class*="css"] {
 
 .logo-sub-text {
     font-size: 1.8rem;
-    color: #CCFF00;
+    color: #FF3D71;
     font-style: italic;
     letter-spacing: 5px;
     font-weight: 800;
@@ -152,30 +137,23 @@ html, body, [class*="css"] {
 }
 
 .since-badge {
-    background: rgba(204, 255, 0, 0.15);
-    color: #CCFF00;
+    background: rgba(255, 61, 113, 0.15);
+    color: #FF3D71;
     padding: 6px 20px;
     border-radius: 30px;
     font-size: 0.9rem;
     font-weight: 900;
     letter-spacing: 2px;
-    border: 1px solid rgba(204, 255, 0, 0.4);
+    border: 1px solid rgba(255, 61, 113, 0.4);
     margin-top: 25px;
-    box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(255, 61, 113, 0.2);
 }
 
-/* ── v4.0 GLOBAL MOBILE STACKING PREVENTION (DEFINITIVE) ── */
+/* ── v17.0 GLOBAL MOBILE FIX ── */
 @media (max-width: 768px) {
-    /* 모든 가로 블록은 무조건 가로(row) 유지 */
     div[data-testid="stHorizontalBlock"] {
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        align-items: stretch !important;
-    }
-    /* 가로 블록 안의 각 컬럼은 공평하게 너비 배분 */
-    div[data-testid="stHorizontalBlock"] > div {
-        flex: 1 1 0% !important;
-        min-width: 0 !important;
     }
 }
 
@@ -245,7 +223,7 @@ html, body, [class*="css"] {
 .sidebar-profile { background: rgba(255, 255, 255, 0.05); border-radius: 18px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); }
 .sidebar-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #FEE500; }
 .feature-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 20px; margin-bottom: 15px; transition: all 0.3s ease; }
-.feature-card:hover { background: rgba(255, 255, 255, 0.06); border-color: #CCFF00; transform: translateX(5px); }
+.feature-card:hover { background: rgba(255, 255, 255, 0.06); border-color: #FF3D71; transform: translateX(5px); }
 
 /* 스코어 입력창 가로 정렬 강제 */
 div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; gap: 10px !important; }
@@ -505,7 +483,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         <div style="flex-shrink:0;">{profile_html}</div>
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v16.1</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v17.0</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
