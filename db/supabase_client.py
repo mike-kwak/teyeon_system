@@ -57,16 +57,8 @@ def upsert_member(kakao_id: int, nickname: str, profile_image: str = None, email
             data["role"] = "CEO"
         res = client.table("members").update(data).eq("kakao_id", kakao_id).execute()
         return res.data[0] if res.data else {}
-
-def delete_kdk_session(session_id: str):
-    """KDK 세션 및 관련 데이터(매치, 결과) 삭제 (Archive)."""
-    client = get_client()
-    client.table("kdk_matches").delete().eq("session_id", session_id).execute()
-    client.table("kdk_results").delete().eq("session_id", session_id).execute()
-    client.table("kdk_sessions").delete().eq("id", session_id).execute()
-
     
-    # 2. 임시 멤버 연결 (중략...)
+    # 2. 임시 멤버 연결
     temp_member = client.table("members").select("*").eq("nickname", nickname).lt("kakao_id", 0).execute()
     if temp_member.data:
         member_id = temp_member.data[0]["id"]
@@ -77,7 +69,6 @@ def delete_kdk_session(session_id: str):
         return res.data[0] if res.data else {}
 
     # 3. 신규 생성
-    # CEO 곽민섭님 자동 지정
     role = "CEO" if nickname == "곽민섭" else "Member"
     data = {
         "kakao_id": kakao_id, 
@@ -88,6 +79,13 @@ def delete_kdk_session(session_id: str):
     }
     res = client.table("members").insert(data).execute()
     return res.data[0] if res.data else {}
+
+def delete_kdk_session(session_id: str):
+    """KDK 세션 및 관련 데이터(매치, 결과) 삭제 (Archive)."""
+    client = get_client()
+    client.table("kdk_matches").delete().eq("session_id", session_id).execute()
+    client.table("kdk_results").delete().eq("session_id", session_id).execute()
+    client.table("kdk_sessions").delete().eq("id", session_id).execute()
 
 def update_member_info(member_id: str, data: dict) -> dict:
     """
