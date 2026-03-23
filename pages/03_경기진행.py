@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 import pandas as pd
 from db.supabase_client import get_kdk_session, update_kdk_session_status, update_kdk_match_score, check_auth_and_log, get_all_members
-from core_logic.kdk_engine import get_rankings_v3
+from core_logic.kdk_engine import get_rankings_v3, calculate_rewards_v2
 
 st.set_page_config(page_title="경기 진행 | TEYEON", page_icon="🎾", layout="wide")
 
@@ -105,7 +105,7 @@ else:
 status_tag = '<span class="status-draft">임시 저장</span>' if status == "draft" else '<span class="status-confirmed">확정</span>'
 st.markdown(f"## 📝 {title} {status_tag}", unsafe_allow_html=True)
 
-rules = data.get("match_rules", "설정된 규칙이 없습니다.")
+rules = data.get("match_rules") or "(모든 게임 1:1 시작, 노에드, 5:5 타이 7포인트 선승...)"
 st.markdown(f'<div class="rules-box"><b>📏 경기 규칙:</b> {rules}</div>', unsafe_allow_html=True)
 
 if status == "draft" and s_id:
@@ -226,11 +226,30 @@ with main_tabs[1]:
         overall_rank, _ = get_rankings_v3(matches, players_info)
         
         if overall_rank:
+            # 상벌금 실시간 계산 추가
+            award_config = {}
+            if s_id and 'curr_s' in locals() and curr_s:
+                award_config = curr_s.get("award_config", {})
+            
+            fines, rewards = calculate_rewards_v2(
+                overall_rank,
+                reward_1st=award_config.get("reward_1st", 10000),
+                fine_25=award_config.get("fine_25", 3000),
+                fine_last_25=award_config.get("fine_last_25", 5000)
+            )
+            
             res_data = []
             for r in overall_rank:
+                name = r["이름"]
+                amt = rewards.get(name, 0) - fines.get(name, 0)
+                note = ""
+                if name in rewards: note = f"👑 상금 (+{rewards[name]:,})"
+                elif name in fines: note = f"❗ 벌금 (-{fines[name]:,})"
+                
                 res_data.append({
-                    "순위": r["순위"], "이름": r["이름"], "승": r["승"], "패": r["패"], 
-                    "득실차": f"{r['득실차']:+}", "경기수": r["경기수"]
+                    "순위": r["순위"], "이름": name, "승": r["승"], "패": r["패"], 
+                    "득실차": f"{r['득실차']:+}", "경기수": r["경기수"],
+                    "정산액": f"{amt:,}원", "비고": note
                 })
             st.dataframe(pd.DataFrame(res_data), use_container_width=True, hide_index=True)
             
