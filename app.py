@@ -35,18 +35,27 @@ st.markdown("""
     background: #0A0E1A; /* Deep Navy */
 }
 
-/* 📱 모바일 화면에서도 3열 그리드 강제 유지 (User Request) */
+/* 📱 모바일 강제 세로 정렬(Stacking) 절대 방어 (Nuclear CSS) */
 @media (max-width: 768px) {
-    /* 가로 배열 블록이 줄바꿈 되도록 허용 */
+    /* 컨테이너를 무조건 가로(row)로 유지하고 줄바꿈(wrap) 허용 */
     div[data-testid="stHorizontalBlock"] {
+        flex-direction: row !important;
         flex-wrap: wrap !important;
+        align-items: stretch !important;
+        gap: 5px !important; /* 버튼 사이 간격 */
     }
-    /* 각 컬럼이 정확히 1/3 사이즈를 차지하도록 강제 고정 */
-    div[data-testid="column"] {
+    /* 각 컬럼이 정확히 1/3(약 31%) 사이즈를 차지하도록 절대 고정 */
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
         width: 31% !important;
         flex: 1 1 31% !important;
         min-width: 31% !important;
         margin-bottom: 10px !important;
+    }
+    /* 모바일에서 버튼 안의 글자가 짤리지 않도록 폰트 크기 조정 */
+    div[data-testid="stHorizontalBlock"] button {
+        padding: 8px 4px !important;
+        font-size: 11px !important; 
+        height: auto !important;
     }
 }
 
@@ -492,7 +501,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v2.3</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v2.4</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
