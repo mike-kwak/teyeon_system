@@ -501,7 +501,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v2.4</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.0</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
@@ -510,35 +510,34 @@ def _render_home(user: dict, role: str):
 <div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">\u26a1 \ube60\ub978 \uc774\ub3d9</div>
 """, unsafe_allow_html=True)
 
-    # ── 완벽 반응형(Fluid) 3열 아이콘 그리드 ──
-    rows = [HOME_MENU[i:i+3] for i in range(0, len(HOME_MENU), 3)]
-    for row in rows:
-        cols = st.columns(3)
-        for col, item in zip(cols, row):
-            locked = not can_access(item["min_role"])
-            coming = item["coming_soon"]
-            if coming:
-                div_class = "icon-btn icon-btn-coming"
-                badge = " 🚧"
-            elif locked:
-                div_class = "icon-btn icon-btn-locked"
-                badge = " 🔒"
-            else:
-                div_class = "icon-btn"
-                badge = ""
-            btn_label = f"{item['icon']}\n\n{item['label']}{badge}"
-            with col:
-                st.markdown(f'<div class="{div_class}">', unsafe_allow_html=True)
-                if st.button(btn_label, key=f"home_{item['icon']}_{item['label']}", use_container_width=True):
-                    if coming:
-                        st.toast("🚧 준비 중입니다.")
-                    elif locked:
-                        st.toast("🔒 정회원만 이용 가능한 메뉴입니다.")
-                    elif item["page"]:
-                        st.switch_page(item["page"])
-                st.markdown("</div>", unsafe_allow_html=True)
+    # ── v3.0 무적의 HTML 아이콘 그리드 (st.columns 미사용) ──
+    grid_html = '<div class="at-html-grid">'
+    for item in HOME_MENU:
+        locked = not can_access(item["min_role"])
+        coming = item["coming_soon"]
+        
+        if coming:
+            state_class = "at-tile-coming"
+            url = "#"
+            badge = "🚧"
+        elif locked:
+            state_class = "at-tile-locked"
+            url = "#"
+            badge = "🔒"
+        else:
+            state_class = "at-tile-active"
+            url = f"/?nav={item['id']}"
+            badge = ""
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        grid_html += f"""
+        <a href="{url}" class="at-tile {state_class}" target="_self">
+            <div class="at-tile-icon">{item['icon']}</div>
+            <div class="at-tile-label">{item['label']} <span class="at-tile-badge">{badge}</span></div>
+        </a>
+        """
+    grid_html += '</div>'
+    
+    st.markdown(grid_html, unsafe_allow_html=True)
     st.markdown("---")
 
 
@@ -547,6 +546,14 @@ import extra_streamlit_components as stx
 
 def main():
     params = st.query_params
+    
+    # ── v3.0 네비게이션 핸들러 ──
+    nav_target = params.get("nav")
+    if nav_target:
+        page_map = {item["id"]: item["page"] for item in HOME_MENU if item["page"]}
+        if nav_target in page_map:
+            st.switch_page(page_map[nav_target])
+
     code = params.get("code")
 
     if code and not st.session_state.get("user"):
