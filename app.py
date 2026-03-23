@@ -163,44 +163,43 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
 }
 
-/* ── v3.5 무적의 Inline-Block 그리드 스타일 ── */
-#at-grid-start ~ div.element-container:has(div.stButton) {
-    display: inline-block !important;
+/* ── v3.6 무적의 Float 그리드 (초강력 호환성) ── */
+#at-grid-start ~ div.element-container {
+    display: block !important;
+    float: left !important;
     width: 31% !important;
     margin: 1% !important;
-    vertical-align: top !important;
+}
+#at-grid-end {
+    clear: both !important;
+    display: block !important;
+    height: 0 !important;
 }
 #at-grid-end ~ div.element-container {
-    display: block !important;
+    clear: none !important;
+    float: none !important;
+    width: 100% !important;
 }
 
-/* 버튼 내부 디자인 고도화 */
+/* 버튼 내부 디자인 미세 조정 (v3.6) */
 .stButton > button {
-    aspect-ratio: 1 / 1.05 !important;
+    aspect-ratio: 1 / 1.02 !important;
     background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
     border: 1px solid rgba(254,255,0,0.15) !important;
-    border-radius: 22px !important;
+    border-radius: 20px !important;
     color: #ffffff !important;
-    font-size: 0.8rem !important;
+    font-size: 0.75rem !important; /* 조금 더 작게 */
     font-weight: 800 !important;
-    padding: 10px 5px !important;
+    padding: 8px 4px !important; /* 패딩 축소 */
     white-space: pre-wrap !important;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    transition: all 0.2s ease !important;
 }
 .stButton > button:hover {
-    transform: translateY(-5px) scale(1.02) !important;
+    transform: translateY(-3px) !important;
     border-color: #CCFF00 !important;
-    box-shadow: 0 10px 25px rgba(204,255,0,0.25) !important;
-}
-
-/* 텍스트 줄바꿈 및 아이콘 크기 조절 */
-.stButton > button p {
-    margin: 0 !important;
-    line-height: 1.2 !important;
 }
 .stButton > button p::first-line {
-    font-size: 2.4rem !important;
-    line-height: 1 !important;
+    font-size: 2.2rem !important; /* 아이콘 크기 살짝 축소 */
 }
 
 /* ── Action Tower Profile Card (Dark Premium) ── */
@@ -506,7 +505,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.5</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v3.6</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
