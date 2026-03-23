@@ -91,6 +91,8 @@ with col_left:
 
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
+    
+    st.markdown('<div class="member-check-grid"></div>', unsafe_allow_html=True)
     m_cols = st.columns(3)
     for i, m in enumerate(filtered):
         m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
