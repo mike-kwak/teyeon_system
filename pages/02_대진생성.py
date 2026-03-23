@@ -114,6 +114,9 @@ with col_left:
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
+    filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
+
     # v19.0: 초스피드 고스트 체크박스 렌더링
     st.markdown('<div class="attendance-section">', unsafe_allow_html=True)
     
