@@ -65,6 +65,21 @@ div[data-testid="stCheckbox"] label:has(input:checked) p {
     font-weight: 900 !important;
 }
 
+/* v20.0: 모바일에서 st.columns가 1열로 뭉치는 것 완벽 차단 */
+@media (max-width: 768px) {
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 0px !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+        width: 32% !important;
+        flex: 1 1 32% !important;
+        min-width: 32% !important;
+        padding: 0 2px !important; /* 버튼 사이 간격 */
+    }
+}
+
 /* 섹션 카드 및 기본 설정 */
 .section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
 </style>
@@ -117,18 +132,17 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
 
-    # v19.0: 초스피드 고스트 체크박스 렌더링
     st.markdown('<div class="attendance-section">', unsafe_allow_html=True)
     
-    # 3열 배치를 위한 컨테이너 시작
-    for m in filtered:
+    # v20.0: st.columns(3)를 사용한 예쁜 3열 분배
+    cols = st.columns(3)
+    for i, m in enumerate(filtered):
         m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
-        
-        # 이전 선택 데이터를 체크박스 초기값으로 사용
         is_pre_selected = m_id in st.session_state.selected_members
         
-        # 체크박스 생성: 리런(rerun) 없이 즉시 반응하는 위장 버튼
-        st.checkbox(m_name, key=f"att_{m_id}", value=is_pre_selected, label_visibility="visible")
+        with cols[i % 3]:
+            # 체크박스 생성: 리런(rerun) 없이 즉시 반응하는 위장 버튼
+            st.checkbox(m_name, key=f"att_{m_id}", value=is_pre_selected, label_visibility="visible")
 
     # 선택된 인원 집계 로직
     current_selected = []
@@ -148,7 +162,7 @@ with col_left:
     # 동기화
     st.session_state.selected_members = current_selected
 
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v19"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v20"):
         for m in members: st.session_state[f"att_{m.get('id')}"] = False
         st.session_state.selected_members = []
         st.session_state.player_times = {}
