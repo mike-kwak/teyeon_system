@@ -259,7 +259,12 @@ with main_tabs[1]:
                     "득실차": f"{r['득실차']:+}", "경기수": r["경기수"],
                     "정산액": f"{amt:,}원", "비고": note
                 })
-            st.dataframe(pd.DataFrame(res_data), use_container_width=True, hide_index=True)
+            df_display = pd.DataFrame(res_data)
+            st.dataframe(
+                df_display.style.set_properties(**{'text-align': 'center'}),
+                use_container_width=True, 
+                hide_index=True
+            )
             
             # 진행 상태 표시
             completed_matches = sum(1 for m in matches if m["status"] == "complete")

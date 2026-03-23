@@ -100,7 +100,12 @@ for r in overall_rank:
         "순위": r["순위"], "이름": name, "승": r["승"], "패": r["패"], 
         "득실차": r["득실차"], "경기수": r["경기수"], "정산액": f"{amt:,}원", "비고": note
     })
-st.dataframe(pd.DataFrame(res_data), use_container_width=True, hide_index=True)
+df_display = pd.DataFrame(res_data)
+st.dataframe(
+    df_display.style.set_properties(**{'text-align': 'center'}),
+    use_container_width=True, 
+    hide_index=True
+)
 
 if fines:
     st.markdown("#### 💸 벌금 입금 계좌")
