@@ -109,7 +109,7 @@ st.markdown(f'<div class="rules-box"><b>📏 경기 규칙:</b> {rules}</div>', 
 
 if status == "draft" and s_id:
     if st.button("✅ 현재 대진표 최종 확정하기", use_container_width=True, type="primary"):
-        update_kdk_session_status(s_id, "confirmed")
+        update_kdk_session_status(s_id, "in_progress")
         st.toast("🎉 대진표가 최종 확정되었습니다!")
         st.rerun()
 
