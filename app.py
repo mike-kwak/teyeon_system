@@ -192,7 +192,7 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
 
 
 # ── 세션 초기화 ───────────────────────────────────────────────────────────
-def _init_session(cookie_manager):
+def _init_session(cookie_manager=None):
     defaults = {
         "user": None,
         "access_token": None,
@@ -205,7 +205,7 @@ def _init_session(cookie_manager):
             st.session_state[k] = v
 
     # ── 자동 로그인 (Cookie Check) ──
-    if not st.session_state.get("user") and not st.session_state.get("is_guest"):
+    if cookie_manager and not st.session_state.get("user") and not st.session_state.get("is_guest"):
         auth_cookie = cookie_manager.get(cookie="teyeon_auth")
         if auth_cookie and isinstance(auth_cookie, dict):
             # 쿠키에 유효한 정보가 있으면 세션 복구
@@ -215,7 +215,7 @@ def _init_session(cookie_manager):
 
 
 # ── 카카오 OAuth 콜백 처리 ─────────────────────────────────────────────────
-def _handle_oauth_callback(cookie_manager):
+def _handle_oauth_callback():
     """URL에 ?code= 파라미터가 있으면 토큰 교환 → 사용자 정보 조회 → DB upsert."""
     params = st.query_params
     code = params.get("code")
@@ -263,19 +263,12 @@ def _handle_oauth_callback(cookie_manager):
         st.session_state["is_admin"]     = member.get("is_admin", False) if member else False
         st.session_state["role"]         = member.get("role", "Member") if member else "Member"
 
-        # ── 브라우저 쿠키에 로그인 정보 저장 (30일 유지) ──
-        from datetime import datetime, timedelta
-        cookie_manager.set("teyeon_auth", {
-            "user": st.session_state["user"],
-            "access_token": st.session_state["access_token"],
-            "kakao_id": st.session_state["kakao_id"],
-            "is_admin": st.session_state["is_admin"],
-            "role": st.session_state["role"]
-        }, expires_at=datetime.now() + timedelta(days=30))
+        # 다음 런에 쿠키를 굽도록 플래그 설정
+        st.session_state["needs_cookie_save"] = True
 
-        # URL 정리 & Rerun 방지 (쿠키 컴포넌트가 무사히 프론트엔드에 렌더링되게 놔둠)
         st.query_params.clear()
-        st.toast("✅ 로그인 성공! 자동 로그인 쿠키가 저장되었습니다.")
+        st.toast("✅ 로그인 성공! 대시보드로 이동합니다.")
+        st.rerun()
 
 
 # ── 랜딩 페이지 (비로그인) ────────────────────────────────────────────────
@@ -608,9 +601,30 @@ div[data-testid="stHorizontalBlock"]:has(.score-stepper-row) > div[data-testid="
 import extra_streamlit_components as stx
 
 def main():
+    params = st.query_params
+    code = params.get("code")
+
+    if code and not st.session_state.get("user"):
+        # OAuth 로그인 진행 중 (쿠키매니저 컴포넌트 렌더링에 의한 st.rerun 쓰레드 중단 방지)
+        _init_session(None)
+        _handle_oauth_callback()
+        return
+
+    # 일반 실행 (로그인 상태이거나, 랜딩 페이지 렌더링 시)
     cookie_manager = stx.CookieManager(key="app_cookie_manager")
     _init_session(cookie_manager)
-    _handle_oauth_callback(cookie_manager)
+
+    # 방금 로그인이 완료되어 쿠키를 구워야 할 경우
+    if st.session_state.get("needs_cookie_save"):
+        from datetime import datetime, timedelta
+        cookie_manager.set("teyeon_auth", {
+            "user": st.session_state["user"],
+            "access_token": st.session_state["access_token"],
+            "kakao_id": st.session_state["kakao_id"],
+            "is_admin": st.session_state["is_admin"],
+            "role": st.session_state["role"]
+        }, expires_at=datetime.now() + timedelta(days=30))
+        del st.session_state["needs_cookie_save"]
 
     user = st.session_state.get("user")
     role = st.session_state.get("role", "Guest")
