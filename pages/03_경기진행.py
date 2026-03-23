@@ -260,8 +260,8 @@ with main_tabs[1]:
                     "정산액": f"{amt:,}원", "비고": note
                 })
 
-# HTML 테이블로 가운데 정렬 구현 (들여쓰기 제거 필수)
-html_table = f"""
+            # HTML 테이블로 가운데 정렬 구현 (들여쓰기 오류 수정 및 렌더링 최적화)
+            html_table = f"""
 <style>
 .ranking-table {{ width: 100%; border-collapse: collapse; margin-top: 10px; color: white; text-align: center; }}
 .ranking-table th {{ background: rgba(204, 255, 0, 0.1); color: #CCFF00; padding: 12px; border-bottom: 2px solid rgba(254, 255, 0, 0.2); font-size: 0.9rem; }}
@@ -278,16 +278,16 @@ html_table = f"""
 </thead>
 <tbody>
 """
-for r in res_data:
-    note_class = "reward-tag" if "상금" in r["비고"] else "penalty-tag" if "벌금" in r["비고"] else ""
-    html_table += f"""
+            for r in res_data:
+                note_class = "reward-tag" if "상금" in r["비고"] else "penalty-tag" if "벌금" in r["비고"] else ""
+                html_table += f"""
 <tr>
 <td>{r['순위']}</td><td>{r['이름']}</td><td>{r['승']}</td><td>{r['패']}</td><td>{r['득실차']}</td><td>{r['경기수']}</td>
 <td>{r['정산액']}</td><td class="{note_class}">{r['비고']}</td>
 </tr>
 """
-html_table += "</tbody></table>"
-st.markdown(html_table, unsafe_allow_html=True)
+            html_table += "</tbody></table>"
+            st.markdown(f"<div>{html_table}</div>", unsafe_allow_html=True)
             
             # 진행 상태 표시
             completed_matches = sum(1 for m in matches if m["status"] == "complete")

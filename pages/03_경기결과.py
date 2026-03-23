@@ -101,7 +101,7 @@ for r in overall_rank:
         "득실차": r["득실차"], "경기수": r["경기수"], "정산액": f"{amt:,}원", "비고": note
     })
 
-# HTML 테이블로 가운데 정렬 구현 (들여쓰기 제거 필수)
+# HTML 테이블로 가운데 정렬 구현 (들여쓰기 오류 수정 및 렌더링 최적화)
 html_table = f"""
 <style>
 .ranking-table {{ width: 100%; border-collapse: collapse; margin-top: 10px; color: white; text-align: center; }}
@@ -128,7 +128,7 @@ for r in res_data:
 </tr>
 """
 html_table += "</tbody></table>"
-st.markdown(html_table, unsafe_allow_html=True)
+st.markdown(f"<div>{html_table}</div>", unsafe_allow_html=True)
 
 if fines:
     st.markdown("<br>", unsafe_allow_html=True)
