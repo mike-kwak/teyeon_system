@@ -36,21 +36,36 @@ st.markdown("""
 div.stButton > button:first-child { background-color: #FEE500 !important; color: #000000 !important; font-weight: 800 !important; border: none !important; padding: 0.25rem 0.5rem; }
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
-    
-/* v8.6: 모바일 환경 (화면 너비 768px 이하) - 사용자 직접 요청 무적의 3열 */
-@media (max-width: 768px) {
-    /* 체크박스를 감싸는 개별 컨테이너를 인라인 블록으로 강제 전환 */
-    div.element-container:has(div[data-testid="stCheckbox"]) {
-        display: inline-block !important;
-        width: 32% !important; /* 3열 꽉 채우기 */
-        margin-bottom: 10px !important;
-        vertical-align: top !important;
-    }
-    /* 체크박스 안의 글자 크기 최적화 (짤림 방지) */
-    div[data-testid="stCheckbox"] label {
-        font-size: 14px !important;
-        padding-left: 1.5rem !important; /* 체크박스 아이콘과 글자 사이 간격 */
-    }
+
+/* v9.0: 무적의 수동 HTML 그리드 스타일 */
+.attendance-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+}
+.member-chip {
+    background: rgba(40, 40, 60, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 10px 5px !important;
+    text-align: center !important;
+    font-size: 0.8rem !important;
+    color: #ccc !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    display: block !important;
+    transition: all 0.2s !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+.member-chip.active {
+    background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
+    border-color: #ff3d71 !important;
+    color: #fff !important;
+    font-weight: 800 !important;
+    box-shadow: 0 0 10px rgba(255, 61, 113, 0.4) !important;
 }
 </style>
 """, unsafe_allow_html=True)
