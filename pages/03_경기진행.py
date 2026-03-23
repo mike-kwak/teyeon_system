@@ -2,9 +2,8 @@ import streamlit as st
 import os
 from datetime import datetime
 import pandas as pd
-from db.supabase_client import get_kdk_session, update_kdk_session_status, update_kdk_match_score, check_auth_and_log
-
-st.set_page_config(page_title="경기 진행 | TEYEON", page_icon="🎾", layout="wide")
+from db.supabase_client import get_kdk_session, update_kdk_session_status, update_kdk_match_score, check_auth_and_log, get_all_members
+from core_logic.kdk_engine import get_rankings_v3st.set_page_config(page_title="경기 진행 | TEYEON", page_icon="🎾", layout="wide")
 
 # 권한 체크
 check_auth_and_log("03_경기진행.py")
@@ -114,7 +113,10 @@ if status == "draft" and s_id:
         st.rerun()
 
 # ── 뷰 전환: 점수 입력 모드 vs 리스트 모드 ──
-if 'editing_match_idx' in st.session_state:
+main_tabs = st.tabs(["🎾 현재 대진 및 점수", "🏆 실시간 랭킹"])
+
+with main_tabs[0]:
+    if 'editing_match_idx' in st.session_state:
     # 점수 입력 모드
     idx = st.session_state.editing_match_idx
     m = matches[idx]
@@ -179,22 +181,63 @@ if 'editing_match_idx' in st.session_state:
         del st.session_state.editing_match_idx
         st.rerun()
 
-else:
-    # ── 대진표 리스트 모드 ──
-    for m in matches:
-        idx = matches.index(m)
-        score_text = f"{m['score1']} : {m['score2']}" if m["status"] == "complete" else "VS"
-        st.markdown(f"""
-        <div class="match-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="flex:1; text-align:left; font-weight:800; font-size:1.1rem;">{' & '.join(m['team1'])}</div>
-                <div style="flex:0.5; text-align:center; font-weight:900; font-size:1.2rem; color:#CCFF00;">{score_text}</div>
-                <div style="flex:1; text-align:right; font-weight:800; font-size:1.1rem;">{' & '.join(m['team2'])}</div>
+    else:
+        # ── 대진표 리스트 모드 ──
+        for m in matches:
+            idx = matches.index(m)
+            score_text = f"{m['score1']} : {m['score2']}" if m["status"] == "complete" else "VS"
+            st.markdown(f"""
+            <div class="match-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1; text-align:left; font-weight:800; font-size:1.1rem;">{' & '.join(m['team1'])}</div>
+                    <div style="flex:0.5; text-align:center; font-weight:900; font-size:1.2rem; color:#CCFF00;">{score_text}</div>
+                    <div style="flex:1; text-align:right; font-weight:800; font-size:1.1rem;">{' & '.join(m['team2'])}</div>
+                </div>
+                <div style="font-size:0.8rem; color:#aab8d4; text-align:center; margin-top:8px;">코트 {m['court']} | 라운드 {m['round']}</div>
             </div>
-            <div style="font-size:0.8rem; color:#aab8d4; text-align:center; margin-top:8px;">코트 {m['court']} | 라운드 {m['round']}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button(f"점수 입력 (코트 {m['court']} / R{m['round']})", key=f"btn_{idx}", use_container_width=True):
-            st.session_state.editing_match_idx = idx
-            st.rerun()
+            """, unsafe_allow_html=True)
+            if st.button(f"점수 입력 (코트 {m['court']} / R{m['round']})", key=f"btn_{idx}", use_container_width=True):
+                st.session_state.editing_match_idx = idx
+                st.rerun()
+
+with main_tabs[1]:
+    st.markdown("### 🏆 실시간 랭킹 (진행 중)")
+    CLUB_ID = os.environ.get("CLUB_ID", "")
+    try:
+        all_members = get_all_members(CLUB_ID)
+        member_map = {m["nickname"]: m for m in all_members}
+        
+        player_names = set()
+        for m in matches:
+            player_names.update(m["team1"])
+            player_names.update(m["team2"])
+            
+        players_info = []
+        for name in player_names:
+            m_info = member_map.get(name, {})
+            players_info.append({
+                "name": name,
+                "birthdate": m_info.get("birthdate", "1900-01-01"),
+                "is_guest": m_info.get("kakao_id", 0) < 0 or name.startswith("Guest") or "is_guest" in m_info
+            })
+            
+        overall_rank, _ = get_rankings_v3(matches, players_info)
+        
+        if overall_rank:
+            res_data = []
+            for r in overall_rank:
+                res_data.append({
+                    "순위": r["순위"], "이름": r["이름"], "승": r["승"], "패": r["패"], 
+                    "득실차": f"{r['득실차']:+}", "경기수": r["경기수"]
+                })
+            st.dataframe(pd.DataFrame(res_data), use_container_width=True, hide_index=True)
+            
+            # 진행 상태 표시
+            completed_matches = sum(1 for m in matches if m["status"] == "complete")
+            st.progress(completed_matches / max(len(matches), 1))
+            st.caption(f"진행률: {completed_matches} / {len(matches)} 경기 완료")
+        else:
+            st.info("아직 랭킹 데이터가 없습니다.")
+    except Exception as e:
+        st.error(f"랭킹 계산 중 오류 발생: {e}")
 
