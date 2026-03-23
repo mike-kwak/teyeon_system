@@ -551,11 +551,6 @@ import extra_streamlit_components as stx
 
 def main():
     params = st.query_params
-    
-    # ── v3.0 네비게이션 핸들러 (v3.2에서 위치 이동) ──
-    # nav_target = params.get("nav")
-    # if nav_target: ...
-
     code = params.get("code")
 
     if code and not st.session_state.get("user"):
