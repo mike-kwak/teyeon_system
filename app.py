@@ -163,40 +163,40 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 15px rgba(204, 255, 0, 0.2);
 }
 
-/* 💻 Action Tower & Grid System (iPhone-Proof Grid) */
-.at-grid-layout [data-testid="stHorizontalBlock"] {
+/* ── v3.0 무적의 HTML 그리드 스타일 ── */
+.at-html-grid {
     display: grid !important;
-    grid-template-columns: 1fr 1fr 1fr !important;
-    gap: 10px !important;
-    width: 100% !important;
-    margin-top: 5px !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 25px;
+    width: 100%;
 }
-.at-grid-layout [data-testid="column"] {
-    width: 100% !important;
-    min-width: 0 !important;
-    flex: none !important;
-}
-.icon-btn > div.stButton > button {
-    width: 100% !important;
-    aspect-ratio: 1 / 1 !important;
-    border-radius: 24px !important;
+.at-tile {
     background: linear-gradient(145deg, rgba(35,45,70,0.95), rgba(20,28,48,0.98)) !important;
     border: 1px solid rgba(254,255,0,0.15) !important;
-    color: #ffffff !important;
-    font-size: 0.8rem !important; font-weight: 800 !important;
-    display: flex !important; flex-direction: column !important;
-    align-items: center !important; justify-content: center !important;
-    padding: 10px !important;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+    border-radius: 22px !important;
+    padding: 18px 5px !important;
+    text-decoration: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    aspect-ratio: 1 / 1.05 !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
-.icon-btn > div.stButton > button:hover {
-    transform: translateY(-5px) !important;
+.at-tile:hover {
+    transform: translateY(-5px) scale(1.02);
     border-color: #CCFF00 !important;
-    box-shadow: 0 10px 25px rgba(204,255,0,0.2) !important;
+    box-shadow: 0 10px 25px rgba(204,255,0,0.25) !important;
 }
-.icon-btn > div.stButton > button p { margin: 0 !important; line-height: 1.1 !important; }
-.icon-btn > div.stButton > button p::first-line { font-size: 2.8rem !important; }
+.at-tile-icon { font-size: 2.8rem; margin-bottom: 8px; line-height: 1; }
+.at-tile-label {
+    font-size: 0.8rem; font-weight: 800; color: #ffffff !important;
+    text-align: center; line-height: 1.2; font-family: 'Montserrat', sans-serif;
+}
+.at-tile-badge { font-size: 0.65rem; vertical-align: middle; opacity: 0.8; }
+.at-tile-locked, .at-tile-coming { opacity: 0.45; filter: grayscale(0.6); cursor: default; pointer-events: none; }
 
 /* ── Action Tower Profile Card (Dark Premium) ── */
 .at-profile-card {
