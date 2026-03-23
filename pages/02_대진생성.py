@@ -99,7 +99,7 @@ with col_left:
         if st.button("전체 적용", use_container_width=True):
             st.session_state.global_start, st.session_state.global_end = new_g_start, new_g_end
             for m_id in st.session_state.selected_members:
-                name = next((m["nickname"] for m in members if m["id"] == m_id), None)
+                name = next((m.get("nickname") for m in members if m.get("id") == m_id), None)
                 if name: st.session_state.player_times[name] = [new_g_start, new_g_end]
             for g in st.session_state.guests: st.session_state.player_times[g] = [new_g_start, new_g_end]
             st.rerun()
@@ -113,29 +113,6 @@ with col_left:
         if st.button("🔄 초기화"):
             st.session_state.selected_members, st.session_state.guests, st.session_state.player_times, st.session_state.player_groups, st.session_state.fixed_partners = [], [], {}, {}, []
             st.rerun()
-
-    # ── v9.1: 더 안전한 클릭 감지 및 상태 업데이트 ──
-    try:
-        if "toggle_id" in st.query_params:
-            toggle_id = st.query_params.get("toggle_id")
-            # members 리스트에서 해당 id 찾기 (데이터 타입 유연하게 처리)
-            target_m = next((m for m in members if str(m.get("id")) == str(toggle_id)), None)
-            if target_m:
-                m_id, m_name = target_m["id"], target_m.get("nickname", "")
-                if m_id in st.session_state.selected_members:
-                    st.session_state.selected_members.remove(m_id)
-                    st.session_state.player_times.pop(m_name, None)
-                    st.session_state.player_groups.pop(m_name, None)
-                else:
-                    st.session_state.selected_members.append(m_id)
-                    st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
-                    st.session_state.player_groups[m_name] = "A"
-            
-            # 파라미터 개별 삭제가 더 안전함
-            for k in list(st.query_params.keys()): del st.query_params[k]
-            st.rerun()
-    except Exception as e:
-        st.error(f"선택 처리 중 오류 발생: {e}")
 
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
@@ -184,14 +161,17 @@ with col_left:
                     display_text += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
                 
                 with cols[j]:
-                    if st.button(display_text, key=f"v15_{m_id}", use_container_width=True):
+                    if st.button(display_text, key=f"v151_{m_id}", use_container_width=True):
                         if is_active:
                             st.session_state.selected_members.remove(m_id)
                             st.session_state.player_times.pop(m_name, None)
                             st.session_state.player_groups.pop(m_name, None)
                         else:
                             st.session_state.selected_members.append(m_id)
-                            st.session_state.player_times[m_name] = [st.session_state.global_start, st.session_state.global_end]
+                            # KeyError 방지용 기본값 처리
+                            g_start = st.session_state.get('global_start', '19:00')
+                            g_end = st.session_state.get('global_end', '22:00')
+                            st.session_state.player_times[m_name] = [g_start, g_end]
                             st.session_state.player_groups[m_name] = "A"
                         st.rerun()
 
