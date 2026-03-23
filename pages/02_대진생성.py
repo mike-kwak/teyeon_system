@@ -37,24 +37,23 @@ div.stButton > button:first-child { background-color: #FEE500 !important; color:
 
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
     
-    /* v8.2: 테두리 있는 컨테이너 내의 점수 입력 컬럼들만 가로로 고정 (확실한 격리) */
+    /* v8.3: 그리드 주입 (확실한 3열 강제) */
     @media (max-width: 768px) {
         div[data-testid="stVerticalBlockBordered"]:has(.attendance-target) div[data-testid="stHorizontalBlock"] {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: wrap !important;
-            align-items: flex-start !important;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr 1fr !important;
             gap: 4px !important;
         }
         div[data-testid="stVerticalBlockBordered"]:has(.attendance-target) div[data-testid="stHorizontalBlock"] > div {
-            flex: 1 1 31% !important;
-            width: 31% !important;
+            width: 100% !important;
             min-width: 0 !important;
-            margin-bottom: 4px !important;
         }
         div[data-testid="stVerticalBlockBordered"]:has(.attendance-target) label {
-            font-size: 0.75rem !important;
-            padding: 2px 0 !important;
+            font-size: 0.72rem !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            padding: 1px 0 !important;
         }
     }
 </style>
