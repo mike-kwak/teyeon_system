@@ -9,86 +9,41 @@ st.set_page_config(page_title="대진 생성 | TEYEON", page_icon="⚙️", layo
 # ── 권한 체크 및 로그 기록 & 사이드바 ──
 check_auth_and_log("02_대진생성.py")
 
-st.markdown("""
-/* v21.0: 수술식 3열 정밀 타게팅 방어막 */
-@media (max-width: 768px) {
-    /* attendee-grid-wrapper 내부의 가로 블록만 멱살 잡기 */
-    div#attendee-grid-wrapper div[data-testid="stHorizontalBlock"] {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 5px !important;
-        flex-wrap: nowrap !important;
-        width: 100% !important;
-    }
-    
-    /* 폰트 크기 조정 및 텍스트 짤림 방지 */
-    div#attendee-grid-wrapper div[data-testid="stCheckbox"] label p {
-        font-size: 13px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
+st.markdown('''
+<style>
+/* v22.0: 3열 네온그린 위장 체크박스 */
+div.element-container:has(div[data-testid="stCheckbox"]) {
+    display: inline-block !important;
+    width: 31% !important;
+    margin: 1% !important;
+    vertical-align: top !important;
 }
-
-/* 1. 데스크탑 3열 설정 */
-@media (min-width: 769px) {
-    div.element-container:has(div[data-testid="stCheckbox"]) {
-        display: inline-block !important;
-        width: 31% !important;
-        margin: 1% !important;
-        vertical-align: top !important;
-    }
-}
-
-/* 2. 원래 있던 기본 체크박스 네모 아이콘 무조건 숨기기 */
-div[data-testid="stCheckbox"] input[type="checkbox"] {
-    display: none !important;
-}
-div[data-testid="stCheckbox"] div[data-baseweb="checkbox"] > div {
-    display: none !important;
-}
-
-/* 3. 체크박스 글자(Label)를 예쁜 버튼 모양으로 바꾸기 */
+div[data-testid="stCheckbox"] input[type="checkbox"] { display: none !important; }
+div[data-testid="stCheckbox"] div[data-baseweb="checkbox"] > div { display: none !important; }
 div[data-testid="stCheckbox"] label {
-    background-color: #1E1E2E !important; /* 딥 네이비 배경 */
+    background-color: #1E1E2E !important;
     border: 1px solid #4a4a6a !important;
     border-radius: 8px !important;
-    padding: 12px 2px !important;
-    text-align: center !important;
+    padding: 10px 0px !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     width: 100% !important;
     cursor: pointer !important;
-    transition: all 0.1s !important;
-    min-height: 45px !important;
+    min-height: 42px !important;
 }
-div[data-testid="stCheckbox"] label p {
-    margin: 0 !important;
-    font-size: 13px !important;
-    color: white !important;
-    font-weight: 700 !important;
-    white-space: nowrap !important;
-}
-
-/* 4. 선택되었을 때(Checked)의 색상 반전 (네온 그린 + 검정 글씨) */
-div[data-testid="stCheckbox"] label[data-checked="true"],
-div[data-testid="stCheckbox"] label:has(input:checked) {
-    background-color: #39FF14 !important; /* 네온 그린 */
+div[data-testid="stCheckbox"] label p { color: white !important; font-size: 13px !important; margin: 0 !important; font-weight: 700 !important; }
+div[data-testid="stCheckbox"] label[data-checked="true"] {
+    background-color: #39FF14 !important;
     border-color: #39FF14 !important;
-    box-shadow: 0 0 10px rgba(57, 255, 20, 0.4) !important;
+    box-shadow: 0 0 8px rgba(57,255,20,0.4) !important;
 }
-div[data-testid="stCheckbox"] label[data-checked="true"] p,
-div[data-testid="stCheckbox"] label:has(input:checked) p {
-    color: #000000 !important; /* 검정 글씨로 가독성 확보 */
-    font-weight: 900 !important;
-}
-
-
-/* 섹션 카드 및 기본 설정 */
-.section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
+div[data-testid="stCheckbox"] label[data-checked="true"] p { color: black !important; font-weight: 900 !important; }
+div[data-testid="stCheckbox"] label:has(input:checked) { background-color: #39FF14 !important; border-color: #39FF14 !important; }
+div[data-testid="stCheckbox"] label:has(input:checked) p { color: black !important; font-weight: 900 !important; }
+.section-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
 </style>
-""", unsafe_allow_html=True)
+''', unsafe_allow_html=True)
 
 CLUB_ID = os.environ.get("CLUB_ID", "")
 
@@ -137,45 +92,28 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
 
-    st.markdown('<div id="attendee-grid-wrapper">', unsafe_allow_html=True)
-    st.markdown('<div class="attendance-section">', unsafe_allow_html=True)
-    
-    # v21.0: st.columns(3)를 사용한 외과 수술식 3열 분배
-    cols = st.columns(3)
-    for i, m in enumerate(filtered):
-        m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
+    # v22.0: 시제 3열 CSS가 열어주는 평면 체크박스 나열
+    for m in filtered:
+        m_id = m.get("id")
+        m_name = m.get("nickname", "이름없음")
         is_pre_selected = m_id in st.session_state.selected_members
-        
-        with cols[i % 3]:
-            # 체크박스 생성: 리런(rerun) 없이 즉시 반응하는 위장 버튼
-            st.checkbox(m_name, key=f"att_{m_id}", value=is_pre_selected, label_visibility="visible")
+        st.checkbox(m_name, key=f"att_{m_id}", value=is_pre_selected, label_visibility="visible")
 
-    st.markdown('</div>', unsafe_allow_html=True) # attendee-grid-wrapper 닫기
-
-    # 선택된 인원 집계 로직
+    # 선택된 인원 집계
     current_selected = []
     for m in members:
         m_id = m.get("id")
         if st.session_state.get(f"att_{m_id}"):
             current_selected.append(m_id)
-            # 시간/조 정보 초기화 (없을 경우에만)
             m_name = m.get("nickname", "이름없음")
             if m_name not in st.session_state.player_times:
-                g_start = st.session_state.get('global_start', '19:00')
-                g_end = st.session_state.get('global_end', '22:00')
-                st.session_state.player_times[m_name] = [g_start, g_end]
+                st.session_state.player_times[m_name] = [st.session_state.get('global_start','19:00'), st.session_state.get('global_end','22:00')]
             if m_name not in st.session_state.player_groups:
                 st.session_state.player_groups[m_name] = "A"
-    
-    # 동기화
     st.session_state.selected_members = current_selected
 
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v21"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_btn_v22"):
         for m in members: st.session_state[f"att_{m.get('id')}"] = False
-        st.session_state.selected_members = []
-        st.session_state.player_times = {}
-        st.session_state.player_groups = {}
-        st.rerun()
         st.session_state.selected_members = []
         st.session_state.player_times = {}
         st.session_state.player_groups = {}
