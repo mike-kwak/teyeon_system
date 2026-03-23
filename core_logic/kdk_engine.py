@@ -193,10 +193,13 @@ def calculate_rewards_v2(overall_rankings, reward_1st=10000, fine_25=3000, fine_
     
     if n == 0: return fines, reward
     
-    # 🥇 1위 상금 (게스트 제외)
-    top_player = overall_rankings[0]
-    if not top_player["is_guest"]:
-        reward[top_player["이름"]] = reward_1st
+    # 🥇 1위 상금 (게스트 제외, 공동 1위 포함)
+    for p in overall_rankings:
+        if p["순위"] == 1:
+            if not p.get("is_guest", False):
+                reward[p["이름"]] = reward_1st
+        else:
+            break
     
     # 💸 벌금 대상자 (하위 50%를 25% / 25%로 나눔)
     # 전체 n에서 하위 50% (올림)

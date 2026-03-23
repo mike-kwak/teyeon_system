@@ -112,7 +112,9 @@ if is_admin and session_data["status"] != "completed":
     st.divider()
     st.warning("⚠️ 결과를 확정하면 하이라이트 포인트와 상벌금 기록이 DB에 정식으로 등록됩니다.")
     
-    if st.button("🚀 결과 최종 확정 및 기록 저장", type="primary", use_container_width=True):
+    confirm_final = st.checkbox("모든 결과를 확인했으며, 저장을 확정합니다.", key="confirm_final")
+    
+    if st.button("🚀 결과 최종 확정 및 기록 저장", type="primary", use_container_width=True, disabled=not confirm_final):
         with st.spinner("결과 기록 중..."):
             try:
                 # 1. kdk_results 저장
@@ -146,10 +148,10 @@ if is_admin and session_data["status"] != "completed":
 
                     # 재무 기록 (상금)
                     if name in rewards:
-                        insert_finance_record(CLUB_ID, "income", -rewards[name], f"KDK 1등 상금 지급 ({name})", user_id, session_id=selected_id, member_id=m_id)
+                        insert_finance_record(CLUB_ID, "reward", -rewards[name], f"KDK 1등 상금 지급 ({name})", user_id, session_id=selected_id, member_id=m_id)
                     # 재무 기록 (벌금)
                     if name in fines:
-                        insert_finance_record(CLUB_ID, "income", fines[name], f"KDK 벌금 납부 ({name})", user_id, session_id=selected_id, member_id=m_id)
+                        insert_finance_record(CLUB_ID, "penalty", fines[name], f"KDK 벌금 납부 ({name})", user_id, session_id=selected_id, member_id=m_id)
 
                 # 3. 세션 상태 업데이트
                 update_kdk_session_status(selected_id, "completed")
