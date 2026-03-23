@@ -18,40 +18,44 @@ def get_local_img_base64(path):
 
 st.markdown("""
 <style>
-/* v5.2 모바일 2열 그리드 및 정보 복구 */
+/* v5.3 모바일 2열 프리미엄 그리드 */
 @media (max-width: 768px) {
     [data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 10px !important;
+        flex-wrap: wrap !important; /* wrap 허용 */
+        gap: 12px 10px !important;
     }
     [data-testid="stHorizontalBlock"] > div {
-        width: 50% !important;
-        min-width: 0 !important;
-        flex: 1 1 50% !important;
+        width: calc(50% - 5px) !important;
+        min-width: calc(50% - 5px) !important;
+        max-width: calc(50% - 5px) !important;
+        flex: 0 0 calc(50% - 5px) !important;
     }
     .member-card { 
-        padding: 15px 10px !important; 
-        border-radius: 12px !important;
-        margin-bottom: 12px !important;
+        padding: 18px 12px !important; 
+        border-radius: 16px !important;
+        margin-bottom: 0 !important;
+        height: 100% !important;
+        flex: 1;
     }
     .profile-img-container {
-        width: 55px !important; 
-        height: 55px !important;
+        width: 60px !important; 
+        height: 60px !important;
         margin-right: 0 !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 12px !important;
+        border-width: 2px !important;
     }
     .member-header {
         flex-direction: column !important;
-        margin-bottom: 12px !important;
-        padding-bottom: 8px !important;
+        margin-bottom: 15px !important;
+        padding-bottom: 10px !important;
     }
-    .member-name { font-size: 1.0rem !important; }
-    .member-role { font-size: 0.75rem !important; padding: 1px 8px !important; }
-    .info-section { display: flex !important; padding: 10px !important; } /* 정보 다시 표시 */
-    .info-label { font-size: 0.7rem !important; }
-    .info-value { font-size: 0.8rem !important; min-height: 1.2em !important; }
+    .member-name { font-size: 1.1rem !important; }
+    .member-role { font-size: 0.8rem !important; padding: 2px 10px !important; }
+    .info-section { display: flex !important; padding: 12px !important; gap: 8px; }
+    .info-label { font-size: 0.7rem !important; margin-bottom: 1px !important; }
+    .info-value { font-size: 0.85rem !important; min-height: 1.2em !important; line-height: 1.3; }
 }
 
 .member-card { 
@@ -139,12 +143,15 @@ members = get_all_members(CLUB_ID)
 # ── 운영진 및 프로필 설정 ───────────────────────────────────────────────────
 ADMIN_MAP = {"박광현": "회장", "강정호": "부회장", "정상윤": "총무", "곽민섭": "재무이사", "김민준": "경기이사", "남인우": "섭외이사"}
 
-# 사진 경로: 다양한 상대경로 및 절대경로 탐색 (v5.2)
+# 사진 경로: 다양한 상대경로 및 절대경로 탐색 (v5.3 - 더욱 강력해진 탐색)
 SEARCH_DIRS = [
     "member_pics",                    # ./member_pics
     "teyeon_system/member_pics",      # ./teyeon_system/member_pics
-    "../member_pics",                  # ../member_pics
+    "../member_pics",                  # ../member_pics (현재 스크린샷 구조)
+    "../Teyeon pic",                   # ../Teyeon pic
     "Teyeon pic",                     # ./Teyeon pic
+    "teyeon_system/Teyeon pic",
+    os.path.join(os.getcwd(), "member_pics"),
     "c:/Users/섭이/Desktop/AI/1. Teyeon/Teyeon pic",
     "c:/Users/섭이/Desktop/AI/1. Teyeon/member_pics"
 ]
@@ -153,12 +160,18 @@ def find_member_image(nickname):
     """다양한 경로와 확장자에서 멤버 이미지를 찾음"""
     exts = [".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"]
     
+    # 닉네임 공백 제거
+    name = nickname.strip()
+    
     for d in SEARCH_DIRS:
         if not os.path.exists(d): continue
         for ext in exts:
-            path = os.path.join(d, f"{nickname}{ext}")
-            if os.path.exists(path):
-                return path
+            # 다양한 조합 시도 (이름_사진.png 형식이 있을 수도 있음 대비)
+            possible_names = [name, name.replace(" ", ""), name.replace("_", "")]
+            for pn in set(possible_names):
+                path = os.path.join(d, f"{pn}{ext}")
+                if os.path.exists(path):
+                    return path
     return None
 
 def get_sort_priority(m):
