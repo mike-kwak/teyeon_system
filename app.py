@@ -204,11 +204,11 @@ html, body, [class*="css"] {
     cursor: default !important;
 }
 
-/* ── Action Tower Profile Card (Dark Premium) ── */
+/* ── v16.0 Action Tower Profile Card (Dark Premium) ── */
 .at-profile-card {
     display: flex; align-items: center; justify-content: space-between;
     background: linear-gradient(135deg, rgba(26,37,61,0.98), rgba(10,14,26,1)) !important;
-    border: 1px solid rgba(204,255,0,0.3) !important;
+    border: 1px solid rgba(255, 61, 113, 0.3) !important;
     border-radius: 24px !important;
     padding: 18px 20px !important;
     margin-bottom: 25px !important;
@@ -217,28 +217,28 @@ html, body, [class*="css"] {
 .at-profile-info { display: flex; align-items: center; gap: 15px; }
 .at-avatar {
     width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
-    border: 2px solid #CCFF00;
+    border: 2px solid #FF3D71;
 }
 .at-avatar-init {
     width: 52px; height: 52px; border-radius: 50%;
-    background: linear-gradient(135deg,#1a253d,#CCFF00 200%);
+    background: linear-gradient(135deg,#1a253d,#FF3D71 200%);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 20px; color: #0A0E1A;
-    border: 2px solid #CCFF00;
+    font-weight: 900; font-size: 20px; color: #fff;
+    border: 2px solid #FF3D71;
 }
 .at-name { font-weight: 900; font-size: 1.15rem; color: #fff !important; line-height: 1.2; }
 .at-badge {
     display: inline-block; font-size: 0.7rem; font-weight: 700;
     padding: 2px 10px; border-radius: 30px; margin-top: 4px; border: 1px solid;
-    background: rgba(255,255,255,0.05); color: #CCFF00; border-color: rgba(204,255,0,0.3);
+    background: rgba(255,255,255,0.05); color: #FF3D71; border-color: rgba(255, 61, 113, 0.3);
 }
 .at-ceo-btn {
-    background: linear-gradient(135deg,#CCFF00,#a8d400) !important;
-    color: #0A0E1A !important; font-weight: 900 !important;
+    background: linear-gradient(135deg,#FF3D71,#FF9B44) !important;
+    color: #fff !important; font-weight: 900 !important;
     font-size: 0.78rem !important; border: none !important;
     border-radius: 14px !important; padding: 10px 16px !important;
     cursor: pointer; white-space: nowrap; text-decoration: none;
-    box-shadow: 0 4px 16px rgba(204,255,0,0.35);
+    box-shadow: 0 4px 16px rgba(255, 61, 113, 0.35);
 }
 
 /* ── 기타 보조 스타일 ── */
@@ -505,7 +505,7 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         <div style="flex-shrink:0;">{profile_html}</div>
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v15.1</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v16.0</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>

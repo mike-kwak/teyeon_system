@@ -9,56 +9,46 @@ st.set_page_config(page_title="대진 생성 | TEYEON", page_icon="⚙️", layo
 # ── 권한 체크 및 로그 기록 & 사이드바 ──
 check_auth_and_log("02_대진생성.py")
 
-st.markdown("""
-<style>
-.member-area div[data-testid="stVerticalBlockBordered"] {
-    padding: 5px 8px !important;
-    background-color: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 10px !important;
-    min-height: 110px !important;
-    max-height: 110px !important;
-    overflow: hidden !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-}
-.member-area div[data-testid="stSelectbox"] [data-baseweb="select"] > div {
-    min-height: 22px !important;
-    height: 22px !important;
-    font-size: 0.8rem !important;
-    padding: 0px 2px !important;
-}
-.member-area div[data-testid="stSelectbox"] svg {
-    display: none !important;
-}
-.section-card { background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px; }
-div.stButton > button:first-child { background-color: #FEE500 !important; color: #000000 !important; font-weight: 800 !important; border: none !important; padding: 0.25rem 0.5rem; }
-
     .stCheckbox label { font-size: 0.9rem !important; font-weight: 600; color: #fff; }
 
-/* v15.0: 모든 레거시 스타일 파기 및 순정 기반 네온 스타일링 */
-/* 촌스러운 노란색($yellow)의 영향을 받지 않도록 모든 버튼 스타일 초기화 */
-div.stButton > button {
-    background: rgba(45, 45, 65, 0.9) !important;
-    color: #cbd5e1 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important;
+/* v16.0: 궁극의 격리형 3열 그리드 (Sibling Sledgehammer) */
+/* 에러와 깨짐을 방지하기 위해 가장 기본적이고 강력한 선택자 사용 */
+div.attendance-start-marker ~ div[data-testid="stHorizontalBlock"] {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    margin-bottom: -10px !important;
+}
+
+div.attendance-start-marker ~ div[data-testid="stHorizontalBlock"] > div {
+    flex: 1 1 32% !important;
+    width: 32% !important;
+    min-width: 30% !important;
+}
+
+/* 버튼 디자인: 촌스러운 노란색 완전 제거 및 세련된 네온 로즈 적용 */
+div.attendance-start-marker ~ div[data-testid="stHorizontalBlock"] button {
+    width: 100% !important;
     padding: 10px 1px !important;
     font-size: 0.72rem !important;
     font-weight: 700 !important;
+    border-radius: 8px !important;
+    background: rgba(45, 45, 65, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #cbd5e1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
-/* 선택된 버튼: 선명한 네온 로즈 (v15.0) */
-div.stButton > button[data-active="true"] {
+/* 선택된 버튼 스타일 (Neon Orange-Red) */
+div.attendance-start-marker ~ div[data-testid="stHorizontalBlock"] button[data-member-active="true"] {
     background: linear-gradient(135deg, #FF3D71, #FF9B44) !important;
-    color: white !important;
+    color: #fff !important;
     border-color: #ff3d71 !important;
-    box-shadow: 0 0 15px rgba(255, 61, 113, 0.5) !important;
+    box-shadow: 0 0 12px rgba(255, 61, 113, 0.5) !important;
 }
-
-/* 모바일 3열 강제 전용 마커 */
-.mobile-3col-container { display: none; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -117,43 +107,16 @@ with col_left:
     search = st.text_input("🔍 이름 검색", placeholder="이름 입력...", label_visibility="collapsed")
     filtered = [m for m in members if search.lower() in m.get("nickname", "").lower()] if search else members
     
-    # v15.0: JS 기반 무적의 3열 엔진 + 네이티브 버튼
-    # 이 구역의 버튼들을 가로로 정렬하기 위한 JS 엔진 주입
-    st.markdown("""
-        <div class="mobile-3col-marker"></div>
-        <script>
-        function repair_grid() {
-            var marker = window.parent.document.querySelector('.mobile-3col-marker');
-            if(!marker) return;
-            
-            var row = marker.closest('.element-container').nextElementSibling;
-            while(row && row.querySelector('[data-testid="stHorizontalBlock"]')) {
-                var container = row.querySelector('[data-testid="stHorizontalBlock"]');
-                container.style.display = 'flex';
-                container.style.flexDirection = 'row';
-                container.style.flexWrap = 'nowrap';
-                container.style.gap = '4px';
-                
-                var cols = container.querySelectorAll('[data-testid="column"]');
-                cols.forEach(c => {
-                    c.style.width = '32%';
-                    c.style.flex = '1 1 32%';
-                    c.style.minWidth = '30%';
-                });
-                row = row.nextElementSibling;
-            }
-        }
-        // 즉시 실행 및 주기적 감시 (Streamlit의 동적 렌더링 때문)
-        setInterval(repair_grid, 300);
-        </script>
-    """, unsafe_allow_html=True)
+    # v16.0: 형제 선택자(~) 기반 격리형 3열 그리드
+    # 이 글자(Marker) 뒤에 나오는 모든 columns 블록은 무조건 가로 3개로 고정됨
+    st.markdown('<div class="attendance-start-marker"></div>', unsafe_allow_html=True)
 
     for i in range(0, len(filtered), 3):
         cols = st.columns(3)
         for j in range(3):
             if i + j < len(filtered):
                 m = filtered[i + j]
-                m_id, m_name = m["id"], m.get("nickname", "이름없음")
+                m_id, m_name = m.get("id"), m.get("nickname", "이름없음")
                 is_active = m_id in st.session_state.selected_members
                 
                 display_text = m_name
@@ -161,29 +124,29 @@ with col_left:
                     display_text += f" [{st.session_state.player_groups.get(m_name, 'A')}]"
                 
                 with cols[j]:
-                    if st.button(display_text, key=f"v151_{m_id}", use_container_width=True):
+                    # 네이티브 버튼으로 100% 선택 안정성 확보
+                    if st.button(display_text, key=f"v16_{m_id}", use_container_width=True):
                         if is_active:
                             st.session_state.selected_members.remove(m_id)
                             st.session_state.player_times.pop(m_name, None)
                             st.session_state.player_groups.pop(m_name, None)
                         else:
                             st.session_state.selected_members.append(m_id)
-                            # KeyError 방지용 기본값 처리
                             g_start = st.session_state.get('global_start', '19:00')
                             g_end = st.session_state.get('global_end', '22:00')
                             st.session_state.player_times[m_name] = [g_start, g_end]
                             st.session_state.player_groups[m_name] = "A"
                         st.rerun()
 
-                    # 선택 표시 (네온 로즈)
+                    # 선택된 경우에만 JS로 마킹 (CSS에서 로즈색으로 변경)
                     if is_active:
                         st.markdown(f"""<script>
                             window.parent.document.querySelectorAll('button').forEach(b => {{
-                                if(b.innerText.trim() === "{display_text}") b.setAttribute('data-active', 'true');
+                                if(b.innerText.trim() === "{display_text}") b.setAttribute('data-member-active', 'true');
                             }});
                         </script>""", unsafe_allow_html=True)
 
-    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v15"):
+    if st.button("🔄 전체 초기화", use_container_width=True, key="reset_all_btn_v16"):
         st.session_state.selected_members = []
         st.session_state.player_times = {}
         st.session_state.player_groups = {}
