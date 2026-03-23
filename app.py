@@ -477,13 +477,13 @@ def _render_home(user: dict, role: str):
     <div class="at-profile-info">
         {avatar}
         <div>
-            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v2.1</small></div>
+            <div class="at-name">\u2b50 {nickname} 님 안녕하세요! <small style="font-size:0.6rem;opacity:0.5;">v2.2</small></div>
             <div class="at-badge">{role_text}</div>
         </div>
     </div>
     {ceo_btn}
 </div>
-<div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">\u26a1 \ubc14\ub978 \uc774\ub3d9</div>
+<div class="at-grid-title" style="margin-bottom: 18px; color: #CCFF00; font-size: 0.85rem; padding-left: 5px;">\u26a1 \ube60\ub978 \uc774\ub3d9</div>
 """, unsafe_allow_html=True)
 
     # ── 완벽 반응형(Fluid) 3열 아이콘 그리드 ──
